@@ -1,2 +1,2 @@
-# wa
-WA - Window Abstraction
+# WA - Window Abstraction
+Simple (Wayland) Window Abstraction in C 
