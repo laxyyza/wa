@@ -8,6 +8,7 @@
 /* Terminal colors */
 #define FG_RED "\033[91m"
 #define BG_RED "\033[101m"
+#define FG_GREEN "\033[92m"
 #define FG_DEFAULT "\033[39m"
 #define BG_DEFAULT "\033[49m"
 
@@ -16,7 +17,7 @@
 static const char* wa_log_str[WA_LOG_LEVEL_LEN] = {
     "WA [" FG_RED "FATAL" FG_DEFAULT "]",
     "WA [" FG_RED "ERROR" FG_DEFAULT "]",
-    "WA [INFO]",
+    "WA [" FG_GREEN "INFO" FG_DEFAULT "]",
     "WA [DEBUG]",
 };
 
