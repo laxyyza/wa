@@ -40,7 +40,7 @@ void wa_log(enum wa_log_level level, const char* format, ...)
         return;
 
     char output[WA_LOG_LEN];
-    FILE* file = (level == WA_ERROR) ? stderr : stdout;
+    FILE* file = (level <= WA_ERROR) ? stderr : stdout;
 
     va_list args;
     va_start(args, format);
