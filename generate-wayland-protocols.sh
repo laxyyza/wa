@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-XDG_SHELL=wayland-protocols/xdg-shell.xml
-XDG_DECORATION=wayland-protocols/xdg-decoration-unstable-v1.xml
+XDG_SHELL=wa/wayland-protocols/xdg-shell.xml
+XDG_DECORATION=wa/wayland-protocols/xdg-decoration-unstable-v1.xml
 INCLUDE_DIR=wa/include
 SRC_DIR=wa/src
 
