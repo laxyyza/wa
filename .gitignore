@@ -55,3 +55,7 @@ build/
 compile_commands.json
 .vscode
 .cache
+wa/include/xdg-decoration.h
+wa/include/xdg-shell.h
+wa/src/xdg-decoration.c
+wa/src/xdg-shell.c
