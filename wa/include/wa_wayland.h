@@ -6,6 +6,8 @@
 #include "xdg-decoration.h"
 
 #include <stdlib.h>
+#include <sys/mman.h>
+#include <unistd.h>
 #include <wayland-client.h>
 #include <wayland-egl.h>
 #include <GL/glew.h>
@@ -59,5 +61,27 @@ typedef struct wa_window
 
     bool running;
 } wa_window_t;
+
+
+/* _input */
+void wa_kb_map(void* data, struct wl_keyboard* keyboard, uint32_t frmt, int fd, uint32_t size);
+void wa_kb_enter(void* data, struct wl_keyboard* keyboard, uint32_t serial, struct wl_surface* surface, struct wl_array* array);
+void wa_kb_leave(void* data, struct wl_keyboard* keyboard, uint32_t serial, struct wl_surface* surface);
+void wa_kb_key(void* data, struct wl_keyboard* keyboard, uint32_t serial, uint32_t t, uint32_t key, uint32_t state);
+void wa_kb_mod(void* data, struct wl_keyboard* keyboard, uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked, uint32_t group);
+void wa_kb_rep(void* data, struct wl_keyboard* keyboard, int32_t rate, int32_t del);
+void wa_point_enter(void* data, struct wl_pointer* pointer, uint32_t serial, struct wl_surface* surface, wl_fixed_t surface_x, wl_fixed_t surface_y);
+void wa_point_leave(void* data, struct wl_pointer* pointer, uint32_t serial, struct wl_surface* surface);
+void wa_point_move(void* data, struct wl_pointer* pointer, uint32_t time, wl_fixed_t surface_x, wl_fixed_t surface_y);
+void wa_point_button(void* data, struct wl_pointer* pointer, uint32_t serial, uint32_t time, uint32_t button, uint32_t state);
+void wa_point_axis(void* data, struct wl_pointer* pointer, uint32_t time, uint32_t axis_type, wl_fixed_t value);
+void wa_point_frame(void* data, struct wl_pointer* pointer);
+void wa_point_axis_src(void* data, struct wl_pointer* pointer, uint32_t axis_src);
+void wa_point_axis_stop(void* data, struct wl_pointer* pointer, uint32_t time, uint32_t axis);
+void wa_point_axis_discrete(void* data, struct wl_pointer* pointer, uint32_t axis, int32_t discrete);
+void wa_point_axis120(void* data, struct wl_pointer* pointer, uint32_t axis_type, int value);
+void wa_point_axis_dir(void* data, struct wl_pointer* pointer, uint32_t axis_type, uint32_t dir);
+void wa_seat_cap(void* data, struct wl_seat* seat, uint32_t cap);
+void wa_seat_name(void* data, struct wl_seat* seat, const char* name);
 
 #endif // _WA_WAYLAND_H_

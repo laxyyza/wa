@@ -7,7 +7,9 @@ include_directories(include/)
 add_library(wa SHARED)
 target_sources(wa PRIVATE
     wa/src/wa_wayland.c
+    wa/src/wa_wayland_input.c
     wa/src/wa_log.c
+
     wa/src/xdg-decoration.c
     wa/src/xdg-shell.c
 )
