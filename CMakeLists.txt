@@ -18,6 +18,7 @@ target_link_libraries(wa PRIVATE
     EGL
     GL
     GLEW
+    xkbcommon
 )
 
 add_executable(wa_test)

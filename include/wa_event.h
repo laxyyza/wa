@@ -27,7 +27,7 @@ typedef struct
         } keyboard;
         struct {
             int x;
-            int h;
+            int y;
         } pointer;
         struct {
             int w;

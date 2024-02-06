@@ -2,6 +2,7 @@
 #define _WA_H_
 
 #include <stdbool.h>
+#include <stdlib.h>
 #include "wa_event.h"
 
 typedef struct wa_window wa_window_t;
@@ -10,6 +11,7 @@ typedef struct
 {
     void (*event)(wa_window_t* window, const wa_event_t* event, void* data);
     void (*update)(wa_window_t* window, void* data);
+    void (*draw)(wa_window_t* window, void* data);
     void (*close)(wa_window_t* window, void* data);
 } wa_callbacks_t;
 

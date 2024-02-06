@@ -1,4 +1,6 @@
 #include "wa_wayland.h"
+#include <sys/mman.h>
+#include <unistd.h>
 
 #include <string.h>
 #include "wa_log.h"
@@ -7,6 +9,7 @@
 #define WA_DEFAULT_TITLE "WA - Window Abstraction"
 
 #define WA_EGL_ERROR eglGetErrorString(eglGetError())
+#define WA_CMP(x) !strcmp(interface, x)
 
 static void wa_default_event(wa_window_t* window, const wa_event_t* event, void* data)
 {
@@ -29,6 +32,205 @@ static void wa_default_close(wa_window_t* window, void* data)
 
 }
 
+static void wa_kb_map(void* data, struct wl_keyboard* keyboard, uint32_t frmt, int fd, uint32_t size)
+{
+    wa_window_t* window = data;
+    char* map_str = MAP_FAILED;
+    printf("kb_map: frmt: %u, fd: %d, size: %u\n", frmt, fd, size);
+
+    map_str = mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
+    if (map_str == MAP_FAILED)
+    {
+        close(fd);
+        return;
+    }
+
+    if (window->xkb_keymap)
+        xkb_keymap_unref(window->xkb_keymap);
+    if (window->xkb_state)
+        xkb_state_unref(window->xkb_state);
+
+    window->xkb_keymap = xkb_keymap_new_from_string(
+            window->xkb_context,
+            map_str,
+            XKB_KEYMAP_FORMAT_TEXT_V1,
+            0
+    );
+
+    munmap(map_str, size);
+    close(fd);
+
+    if (window->xkb_keymap == NULL)
+    {
+        fprintf(stderr, "WA ERROR: Failed to compile keymap.\n");
+        return;
+    }
+
+    window->xkb_state = xkb_state_new(window->xkb_keymap);
+    if (window->xkb_state == NULL)
+    {
+        fprintf(stderr, "WA ERROR: Failed to create XKB state.\n");
+        xkb_keymap_unref(window->xkb_keymap);
+        window->xkb_keymap = NULL;
+        return;
+    }
+}
+
+static void wa_kb_enter(void* data, struct wl_keyboard* keyboard, uint32_t serial, struct wl_surface* surface, struct wl_array* array)
+{
+    wa_log(WA_DEBUG, "kb_enter: serial: %u\n", serial);
+}
+
+static void wa_kb_leave(void* data, struct wl_keyboard* keyboard, uint32_t serial, struct wl_surface* surface)
+{
+    wa_log(WA_DEBUG, "kb_leave: serial: %u\n", serial);
+}
+
+static void wa_kb_key(void* data, struct wl_keyboard* keyboard, uint32_t serial, uint32_t t, uint32_t key, uint32_t state)
+{
+    wa_window_t* window = data;
+
+    const uint32_t unicode = xkb_state_key_get_utf32(window->xkb_state, key + 8);
+    wa_event_t key_event = {
+        .type = WA_EVENT_KEYBOARD,
+        .keyboard.key = key,
+        .keyboard.unicode = unicode,
+        .keyboard.state = (enum wa_keyboard_state)state
+    };
+
+    wa_log(WA_DEBUG, "Unicode: '%c'\n", unicode);
+
+    window->state.callbacks.event(window, &key_event, window->state.user_data);
+}
+
+static void wa_kb_mod(  void* data,
+                        struct wl_keyboard* keyboard,
+                        uint32_t serial,
+                        uint32_t mods_depressed,
+                        uint32_t mods_latched,
+                        uint32_t mods_locked,
+                        uint32_t group)
+{
+    wa_window_t* window = data;
+
+    xkb_state_update_mask(window->xkb_state, mods_depressed, mods_latched, mods_locked, 0, 0, group);
+}
+
+static void wa_kb_rep(void* data, struct wl_keyboard* keyboard, int32_t rate, int32_t del)
+{
+    wa_log(WA_DEBUG, "kb_rep: rate: %u, del: %d\n", rate, del);
+}
+
+static void wa_point_enter(void* data, struct wl_pointer* pointer, uint32_t serial, struct wl_surface* surface, wl_fixed_t surface_x, wl_fixed_t surface_y)
+{
+    wa_log(WA_DEBUG, "WA: point_enter(surxy: %dx%d)\n", surface_x, surface_y);
+}
+
+static void wa_point_leave(void* data, struct wl_pointer* pointer, uint32_t serial, struct wl_surface* surface)
+{
+    wa_log(WA_DEBUG, "WA: point_leave()\n");
+}
+
+static void wa_point_move(void* data, struct wl_pointer* pointer, uint32_t time, wl_fixed_t surface_x, wl_fixed_t surface_y)
+{
+    wa_window_t* window = data;
+    const int x = wl_fixed_to_int(surface_x);
+    const int y = wl_fixed_to_int(surface_y);
+
+    //printf("WA: point_move(time: %u) %dx%d\n", time, x, y);
+
+    wa_event_t event = {
+        .type = WA_EVENT_POINTER,
+        .pointer.x = x,
+        .pointer.y = y,
+    };
+
+    window->state.callbacks.event(window, &event, window->state.user_data);
+}
+
+static void wa_point_button(void* data, struct wl_pointer* pointer, uint32_t serial, uint32_t time, uint32_t button, uint32_t state)
+{
+    wa_log(WA_DEBUG, "WA: point_button(serial: %u, time: %u) button: %u, state: %u\n", serial, time, button, state);
+    // linux/input-event-codes.h
+}
+
+static void wa_point_axis(void* data, struct wl_pointer* pointer, uint32_t time, uint32_t axis_type, wl_fixed_t value)
+{
+    wa_log(WA_DEBUG, "WA: point_axis(time: %u) type: %u, val: %u\n", time, axis_type, value);
+}
+
+static void wa_point_frame(void* data, struct wl_pointer* pointer)
+{
+}
+
+static void wa_point_axis_src(void* data, struct wl_pointer* pointer, uint32_t axis_src)
+{
+    wa_log(WA_DEBUG, "WA: point_axis_src() %u\n", axis_src);
+}
+
+static void wa_point_axis_stop(void* data, struct wl_pointer* pointer, uint32_t time, uint32_t axis)
+{
+    wa_log(WA_DEBUG, "WA: point_axis_stop(time: %u) %u\n", time, axis);
+}
+
+static void wa_point_axis_discrete(void* data, struct wl_pointer* pointer, uint32_t axis, int32_t discrete)
+{
+    wa_log(WA_DEBUG, "WA: point_axis_discrete() axis: %u, discrete: %d\n", axis, discrete);
+}
+
+static void wa_point_axis120(void* data, struct wl_pointer* pointer, uint32_t axis_type, int value)
+{
+    wa_log(WA_DEBUG, "WA: point_axis120() type: %u, value: %d\n", axis_type, value);
+}
+
+static void wa_point_axis_dir(void* data, struct wl_pointer* pointer, uint32_t axis_type, uint32_t dir)
+{
+    wa_log(WA_DEBUG, "WA: point_axis_dir() type: %u, dir: %u\n", axis_type, dir);
+}
+
+static void wa_seat_cap(void* data, struct wl_seat* seat, uint32_t cap)
+{
+    wa_window_t* window = data;
+    if (cap & WL_SEAT_CAPABILITY_KEYBOARD)
+    {
+        window->wl_keyboard = wl_seat_get_keyboard(seat);
+
+        window->wl_keyboard_listener.keymap = wa_kb_map;
+        window->wl_keyboard_listener.enter = wa_kb_enter;
+        window->wl_keyboard_listener.leave = wa_kb_leave;
+        window->wl_keyboard_listener.key = wa_kb_key;
+        window->wl_keyboard_listener.modifiers = wa_kb_mod;
+        window->wl_keyboard_listener.repeat_info = wa_kb_rep;
+
+        wl_keyboard_add_listener(window->wl_keyboard, &window->wl_keyboard_listener, data);
+    }
+    if (cap & WL_SEAT_CAPABILITY_POINTER)
+    {
+        window->wl_pointer = wl_seat_get_pointer(seat);
+
+        window->wl_pointer_listener.enter = wa_point_enter;
+        window->wl_pointer_listener.leave = wa_point_leave;
+        window->wl_pointer_listener.motion = wa_point_move;
+        window->wl_pointer_listener.button = wa_point_button;
+        window->wl_pointer_listener.axis = wa_point_axis;
+        window->wl_pointer_listener.frame = wa_point_frame;
+        window->wl_pointer_listener.axis_source = wa_point_axis_src;
+        window->wl_pointer_listener.axis_stop = wa_point_axis_stop;
+        window->wl_pointer_listener.axis_discrete = wa_point_axis_discrete;
+        window->wl_pointer_listener.axis_value120 = wa_point_axis120;
+        window->wl_pointer_listener.axis_relative_direction = wa_point_axis_dir;
+
+        wl_pointer_add_listener(window->wl_pointer, &window->wl_pointer_listener, window);
+    }
+
+    wa_log(WA_DEBUG, "wl_seat cap: 0x%X\n", cap);
+}
+
+static void wa_seat_name(void* data, struct wl_seat* seat, const char* name)
+{
+    wa_log(WA_DEBUG, "wl_seat name: '%s'\n", name);
+}
+
 static void wa_window_resize(wa_window_t* window)
 {
     const int w = window->state.window.w;
@@ -48,23 +250,24 @@ static void wa_reg_glob(void* data, struct wl_registry* reg, uint32_t name, cons
 {
     wa_window_t* window = data;
 
-    if (!strcmp(interface, wl_compositor_interface.name))
+    if (WA_CMP(wl_compositor_interface.name))
     {
         window->wl_compositor = wl_registry_bind(reg, name, &wl_compositor_interface, version);
     }
-    else if (!strcmp(interface, xdg_wm_base_interface.name))
+    else if (WA_CMP(xdg_wm_base_interface.name))
     {
         window->xdg_shell = wl_registry_bind(reg, name, &xdg_wm_base_interface, version);
         window->xdg_shell_listener.ping = wa_xdg_shell_ping;
         xdg_wm_base_add_listener(window->xdg_shell, &window->xdg_shell_listener, window);
     }
-    /*
-    else if (!strcmp(interface, wl_seat_interface.name))
+    else if (WA_CMP(wl_seat_interface.name))
     {
-
+        window->wl_seat = wl_registry_bind(reg, name, &wl_seat_interface, version);
+        window->wl_seat_listener.capabilities = wa_seat_cap;
+        window->wl_seat_listener.name = wa_seat_name;
+        wl_seat_add_listener(window->wl_seat, &window->wl_seat_listener, window);
     }
-    */
-    else if (!strcmp(interface, wl_output_interface.name))
+    else if (WA_CMP(wl_output_interface.name))
     {
         if (window->wl_outputs == NULL)
         {
@@ -79,7 +282,7 @@ static void wa_reg_glob(void* data, struct wl_registry* reg, uint32_t name, cons
 
         window->wl_outputs[window->n_outputs - 1] = wl_registry_bind(reg, name, &wl_output_interface, version);
     }
-    else if (!strcmp(interface, zxdg_decoration_manager_v1_interface.name))
+    else if (WA_CMP(zxdg_decoration_manager_v1_interface.name))
     {
         window->xdg_decoration_manager = wl_registry_bind(reg, name, &zxdg_decoration_manager_v1_interface, version);
     }
@@ -349,12 +552,10 @@ static bool wa_window_init_egl(wa_window_t* window)
         wa_logf(WA_ERROR, "EGL Bind API: %s\n", WA_EGL_ERROR);
     }
 
-    wa_log(WA_DEBUG, "window->egl_config: %p\n", window->egl_config);
     if (!eglChooseConfig(window->egl_display, config_attr, &window->egl_config, 1, &n) || n != 1)
     {
         wa_logf(WA_ERROR, "EGL Choose Config: %s\n", WA_EGL_ERROR);
     }
-    wa_log(WA_DEBUG, "window->egl_config: %p\n", window->egl_config);
 
     if ((window->egl_context = eglCreateContext(window->egl_display, window->egl_config, EGL_NO_CONTEXT, context_attr)) == EGL_NO_CONTEXT)
     {
@@ -422,6 +623,8 @@ wa_window_t* wa_window_create_from_state(wa_state_t* state)
         wa_window_delete(window);
         return NULL;
     }
+
+    window->xkb_context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
 
     wl_display_dispatch(window->wl_display);
     wa_draw(window);

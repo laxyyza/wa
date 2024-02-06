@@ -39,9 +39,14 @@ typedef struct wa_window
     struct wl_keyboard_listener     wl_keyboard_listener;
     struct wl_pointer_listener      wl_pointer_listener;
     struct wl_output_listener       wl_output_listener;
+    struct wl_seat_listener         wl_seat_listener;
     struct xdg_wm_base_listener     xdg_shell_listener;
     struct xdg_toplevel_listener    xdg_toplevel_listener;
     struct xdg_surface_listener     xdg_surface_listener;
+
+    struct xkb_context*     xkb_context;
+    struct xkb_keymap*      xkb_keymap;
+    struct xkb_state*       xkb_state;
 
     EGLDisplay  egl_display;
     EGLSurface  egl_surface;
