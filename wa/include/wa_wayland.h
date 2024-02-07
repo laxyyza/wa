@@ -21,7 +21,6 @@ typedef struct wa_window
     struct wl_registry*     wl_registry;
     struct wl_compositor*   wl_compositor;
     struct wl_surface*      wl_surface;
-    struct wl_buffer*       wl_buffer;
     struct wl_seat*         wl_seat;
     struct wl_keyboard*     wl_keyboard;
     struct wl_pointer*      wl_pointer;

@@ -376,7 +376,8 @@ static bool wa_window_init_egl(wa_window_t* window)
         wa_logf(WA_ERROR, "EGL Make current: %s\n", WA_EGL_ERROR);
     }
 
-    glewInit();
+    if (glewInit() != GLEW_OK)
+        wa_logf(WA_ERROR, "GLEW init failed: %s\n", glewGetErrorString(glGetError()));
 
     return true;
 }
@@ -400,7 +401,7 @@ wa_window_t* wa_window_create_from_state(wa_state_t* state)
         wa_logf(WA_FATAL, "%s() state is NULL!\n", __func__);
         return NULL;
     }
-
+    
     wa_window_t* window = malloc(sizeof(wa_window_t));
     if (window == NULL)
     {
@@ -518,13 +519,70 @@ void wa_window_stop(wa_window_t* window)
     window->running = false;
 }
 
+static void wa_window_egl_cleanup(wa_window_t* window)
+{
+    if (window->egl_display)
+    {
+        if (window->egl_surface)
+            eglDestroySurface(window->egl_display, window->egl_surface);
+        if (window->egl_context)
+            eglDestroyContext(window->egl_display, window->egl_context);
+        eglTerminate(window->egl_display);
+    }
+}
+
+static void wa_window_xkb_cleanup(wa_window_t* window)
+{
+    if (window->xkb_context)
+        xkb_context_unref(window->xkb_context);
+    if (window->xkb_keymap)
+        xkb_keymap_unref(window->xkb_keymap);
+    if (window->xkb_state)
+        xkb_state_unref(window->xkb_state);
+}
+
+static void wa_window_wayland_cleanup(wa_window_t* window)
+{
+    if (window->xdg_toplevel_decoration)
+        zxdg_toplevel_decoration_v1_destroy(window->xdg_toplevel_decoration);
+    if (window->xdg_decoration_manager)
+        zxdg_decoration_manager_v1_destroy(window->xdg_decoration_manager);
+    if (window->xdg_toplevel)
+        xdg_toplevel_destroy(window->xdg_toplevel);
+    if (window->xdg_surface)
+        xdg_surface_destroy(window->xdg_surface);
+    if (window->xdg_shell)
+        xdg_wm_base_destroy(window->xdg_shell);
+    if (window->wl_registry)
+        wl_registry_destroy(window->wl_registry);
+    if (window->wl_compositor)
+        wl_compositor_destroy(window->wl_compositor);
+    if (window->wl_surface)
+        wl_surface_destroy(window->wl_surface);
+    if (window->wl_keyboard)
+        wl_keyboard_destroy(window->wl_keyboard);
+    if (window->wl_pointer)
+        wl_pointer_destroy(window->wl_pointer);
+    if (window->wl_egl_window)
+        wl_egl_window_destroy(window->wl_egl_window);
+    for (size_t i = 0; i < window->n_outputs; i++)
+        if (window->wl_outputs[i])
+            wl_output_destroy(window->wl_outputs[i]);
+
+    if (window->wl_display)
+        wl_display_disconnect(window->wl_display);
+}
+
 void wa_window_delete(wa_window_t* window)
 {
     if (!window)
         return;
 
-    if (window->wl_display)
-        wl_display_disconnect(window->wl_display);
-
+    wa_window_egl_cleanup(window);
+    wa_window_xkb_cleanup(window);
+    wa_window_wayland_cleanup(window);
+        
     free(window);
+
+    wa_log(WA_DEBUG, "Cleanup done.\n");
 }
