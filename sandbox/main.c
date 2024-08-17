@@ -92,6 +92,8 @@ create_shader_program(void)
 
     glDeleteShader(vert_shader);
     glDeleteShader(frag_shader);
+    free((void*)vert_src);
+    free((void*)frag_src);
 
     return shader_program;
 }
