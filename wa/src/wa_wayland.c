@@ -282,6 +282,9 @@ static bool wa_window_init_wayland(wa_window_t* window)
         wa_logf(WA_FATAL, "Failed to get XDG Toplevel!\n");
         return false;
     }
+    wl_surface_commit(window->wl_surface);
+    wl_display_roundtrip(window->wl_display);
+
     wa_init_xdg_decoration(window);
     window->xdg_toplevel_listener.configure = wa_toplevel_conf;
     window->xdg_toplevel_listener.close = wa_toplevel_close;
