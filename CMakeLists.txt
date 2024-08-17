@@ -29,4 +29,7 @@ target_sources(wa_test PRIVATE
 )
 target_link_libraries(wa_test PRIVATE 
     wa
+    GL
+    EGL
+    GLEW
 )

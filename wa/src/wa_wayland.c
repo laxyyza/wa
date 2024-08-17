@@ -21,8 +21,8 @@ static void wa_default_update(wa_window_t* window, void* data)
 
 static void wa_default_draw(wa_window_t* window, void* data)
 {
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    // glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    // glClear(GL_COLOR_BUFFER_BIT);
 }
 
 static void wa_default_close(wa_window_t* window, void* data)
@@ -36,6 +36,7 @@ static void wa_window_resize(wa_window_t* window)
     const int h = window->state.window.h;
 
     wl_egl_window_resize(window->wl_egl_window, w, h, 0, 0);
+    glViewport(0, 0, w, h);
     wa_log(WA_DEBUG, "Window resized: %dx%d\n", w, h);
 }
 
