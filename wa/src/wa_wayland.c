@@ -9,28 +9,32 @@
 #define WA_EGL_ERROR eglGetErrorString(eglGetError())
 #define WA_CMP(x) !strcmp(interface, x)
 
-static void wa_default_event(wa_window_t* window, const wa_event_t* event, void* data)
+static void 
+wa_default_event(_WA_UNUSED wa_window_t* window, _WA_UNUSED const wa_event_t* event, _WA_UNUSED void* data)
 {
 
 }
 
-static void wa_default_update(wa_window_t* window, void* data)
+static void 
+wa_default_update(_WA_UNUSED wa_window_t* window, _WA_UNUSED void* data)
 {
 
 }
 
-static void wa_default_draw(wa_window_t* window, void* data)
+static void 
+wa_default_draw(_WA_UNUSED wa_window_t* window, _WA_UNUSED void* data)
 {
-    // glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-    // glClear(GL_COLOR_BUFFER_BIT);
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
 }
 
-static void wa_default_close(wa_window_t* window, void* data)
+static void 
+wa_default_close(_WA_UNUSED wa_window_t* window, _WA_UNUSED void* data)
 {
-
 }
 
-static void wa_window_resize(wa_window_t* window)
+static void 
+wa_window_resize(wa_window_t* window)
 {
     const int w = window->state.window.w;
     const int h = window->state.window.h;
@@ -40,13 +44,15 @@ static void wa_window_resize(wa_window_t* window)
     wa_log(WA_DEBUG, "Window resized: %dx%d\n", w, h);
 }
 
-static void wa_xdg_shell_ping(void* data, struct xdg_wm_base* xdg_shell, uint32_t serial)
+static void 
+wa_xdg_shell_ping(_WA_UNUSED void* data, struct xdg_wm_base* xdg_shell, uint32_t serial)
 {
     xdg_wm_base_pong(xdg_shell, serial);
     wa_log(WA_DEBUG, "XDG Shell pong!\n");
 }
 
-static void wa_reg_glob(void* data, struct wl_registry* reg, uint32_t name, const char* interface, uint32_t version)
+static void 
+wa_reg_glob(void* data, struct wl_registry* reg, uint32_t name, const char* interface, uint32_t version)
 {
     wa_window_t* window = data;
 
@@ -95,19 +101,22 @@ static void wa_reg_glob(void* data, struct wl_registry* reg, uint32_t name, cons
     wa_log(WA_INFO, "Using Interface: %u '%s' v%u\n", name, interface, version);
 }
 
-static void wa_reg_glob_rm(void* data, struct wl_registry* reg, uint32_t name)
+static void 
+wa_reg_glob_rm(_WA_UNUSED void* data, _WA_UNUSED struct wl_registry* reg, uint32_t name)
 {
     wa_log(WA_WARN, "Interface: %u removed.\n", name);
 }
 
-static void wa_draw(wa_window_t* window)
+static void 
+wa_draw(wa_window_t* window)
 {
     window->state.callbacks.draw(window, window->state.user_data);
 
     eglSwapBuffers(window->egl_display, window->egl_surface);
 }
 
-static void wa_frame_done(void* data, struct wl_callback* callback, uint32_t callback_data)
+static void 
+wa_frame_done(void* data, struct wl_callback* callback, _WA_UNUSED uint32_t callback_data)
 {
     wa_window_t* window = data;
     wl_callback_destroy(callback);
@@ -117,13 +126,15 @@ static void wa_frame_done(void* data, struct wl_callback* callback, uint32_t cal
     wa_draw(window);
 }
 
-static void wa_xdg_surface_conf(void* data, struct xdg_surface* xdg_surface, uint32_t serial)
+static void 
+wa_xdg_surface_conf(_WA_UNUSED void* data, struct xdg_surface* xdg_surface, uint32_t serial)
 {
     xdg_surface_ack_configure(xdg_surface, serial);
-    //wa_log(WA_DEBUG, "XDG Surface configire\n");
+    wa_log(WA_DEBUG, "XDG Surface configire\n");
 }
 
-static void wa_init_xdg_decoration(wa_window_t* window)
+static void 
+wa_init_xdg_decoration(wa_window_t* window)
 {
     if (window->xdg_decoration_manager)
     {
@@ -138,7 +149,8 @@ static void wa_init_xdg_decoration(wa_window_t* window)
     }
 }
 
-static void wa_toplevel_conf(void* data, struct xdg_toplevel* toplevel, int w, int h, struct wl_array* states)
+static void 
+wa_toplevel_conf(void* data, _WA_UNUSED struct xdg_toplevel* toplevel, int w, int h, _WA_UNUSED struct wl_array* states)
 {
     wa_window_t* window = data;
 
@@ -161,7 +173,8 @@ static void wa_toplevel_conf(void* data, struct xdg_toplevel* toplevel, int w, i
     //wa_log(WA_DEBUG, "XDG Toplevel configure\n");
 }
 
-static void wa_toplevel_close(void* data, struct xdg_toplevel* toplevel)
+static void 
+wa_toplevel_close(void* data, _WA_UNUSED struct xdg_toplevel* toplevel)
 {
     wa_window_t* window = data;
 
@@ -172,47 +185,57 @@ static void wa_toplevel_close(void* data, struct xdg_toplevel* toplevel)
     wa_log(WA_DEBUG, "XDG Toplevel close\n");
 }
 
-static void wa_toplevel_conf_bounds(void* data, struct xdg_toplevel* toplevel, int w, int h)
+static void 
+wa_toplevel_conf_bounds(_WA_UNUSED void* data, _WA_UNUSED struct xdg_toplevel* toplevel, _WA_UNUSED int w, _WA_UNUSED int h)
 {
 }
 
-static void wa_toplevel_wm_caps(void* data, struct xdg_toplevel* toplevel, struct wl_array* caps)
+static void 
+wa_toplevel_wm_caps(_WA_UNUSED void* data, _WA_UNUSED struct xdg_toplevel* toplevel, _WA_UNUSED struct wl_array* caps)
 {
 }
 
-static void wa_output_geo(void* data, struct wl_output* output, int x, int y, int phy_w, int phy_h, 
-        int subpixel, const char* make, const char* model, int transform)
+static void 
+wa_output_geo(_WA_UNUSED void* data, _WA_UNUSED struct wl_output* output, 
+              int x, int y, int phy_w, int phy_h, int subpixel, 
+              const char* make, const char* model, int transform)
 {
     wa_log(WA_INFO, "Output\n\tx/y:\t%dx%d\n\tphy w/h:\t%dx%d\n\tsubpixel:\t%d\n\tmake:\t'%s'\n\tmodel:\t'%s'\n\ttransform:\t%d\n",
             x, y, phy_w, phy_h, subpixel, make, model, transform);
 }
 
-static void wa_output_mode(void* data, struct wl_output* output, uint32_t flags, int w, int h, int refresh_rate)
+static void 
+wa_output_mode(_WA_UNUSED void* data, _WA_UNUSED struct wl_output* output, uint32_t flags, int w, int h, int refresh_rate)
 {
     wa_log(WA_INFO, "Mode: %dx%d @ %d (flags: %u)\n", w, h, refresh_rate, flags);
 }
 
-static void wa_output_done(void* data, struct wl_output* output)
+static void 
+wa_output_done(_WA_UNUSED void* data, _WA_UNUSED struct wl_output* output)
 {
     wa_log(WA_DEBUG, "%s()\n", __func__);
 }
 
-static void wa_output_scale(void* data, struct wl_output* output, int factor)
+static void 
+wa_output_scale(_WA_UNUSED void* data, _WA_UNUSED struct wl_output* output, int factor)
 {
     wa_log(WA_INFO, "Scale:\t%d\n", factor);
 }
 
-static void wa_output_name(void* data, struct wl_output* output, const char* name)
+static void 
+wa_output_name(_WA_UNUSED void* data, _WA_UNUSED struct wl_output* output, const char* name)
 {
     wa_log(WA_INFO, "Name:\t'%s'\n", name);
 }
 
-static void wa_output_desc(void* data, struct wl_output* output, const char* desc)
+static void 
+wa_output_desc(_WA_UNUSED void* data, _WA_UNUSED struct wl_output* output, const char* desc)
 {
     wa_log(WA_INFO, "Desc:\t'%s'\n", desc);
 }
 
-static const char* eglGetErrorString(EGLint error)
+static const char* 
+eglGetErrorString(EGLint error)
 {
     switch(error)
     {
@@ -235,7 +258,8 @@ static const char* eglGetErrorString(EGLint error)
     }
 }
 
-static bool wa_window_init_wayland(wa_window_t* window)
+static bool 
+wa_window_init_wayland(wa_window_t* window)
 {
     if ((window->wl_display = wl_display_connect(NULL)) == NULL)
     {
@@ -315,7 +339,8 @@ static bool wa_window_init_wayland(wa_window_t* window)
     return true;
 }
 
-static bool wa_window_init_egl(wa_window_t* window)
+static bool 
+wa_window_init_egl(wa_window_t* window)
 {
     const EGLint context_attr[] = {
         EGL_CONTEXT_CLIENT_VERSION, 2,
@@ -386,7 +411,8 @@ static bool wa_window_init_egl(wa_window_t* window)
     return true;
 }
 
-wa_window_t* wa_window_create(const char* title, int w, int h, bool fullscreen)
+wa_window_t* 
+wa_window_create(const char* title, int w, int h, bool fullscreen)
 {
     wa_state_t state;
     wa_state_set_default(&state);
@@ -398,7 +424,8 @@ wa_window_t* wa_window_create(const char* title, int w, int h, bool fullscreen)
     return wa_window_create_from_state(&state);
 }
 
-wa_window_t* wa_window_create_from_state(wa_state_t* state)
+wa_window_t* 
+wa_window_create_from_state(wa_state_t* state)
 {
     if (!state)
     {
@@ -439,7 +466,8 @@ wa_window_t* wa_window_create_from_state(wa_state_t* state)
     return window;
 }
 
-void wa_state_set_default(wa_state_t* state)
+void 
+wa_state_set_default(wa_state_t* state)
 {
     if (!state)
     {
@@ -460,7 +488,8 @@ void wa_state_set_default(wa_state_t* state)
     state->window.wayland.app_id = WA_DEFAULT_APP_ID;
 }
 
-void wa_window_set_callbacks(wa_window_t* window, const wa_callbacks_t* callbacks)
+void 
+wa_window_set_callbacks(wa_window_t* window, const wa_callbacks_t* callbacks)
 {
     if (!window || !callbacks)
         return;
@@ -468,12 +497,14 @@ void wa_window_set_callbacks(wa_window_t* window, const wa_callbacks_t* callback
     memcpy(&window->state.callbacks, callbacks, sizeof(wa_callbacks_t));
 }
 
-wa_state_t* wa_window_get_state(wa_window_t* window)
+wa_state_t* 
+wa_window_get_state(wa_window_t* window)
 {
     return &window->state;
 }
 
-int wa_window_mainloop(wa_window_t* window)
+int 
+wa_window_mainloop(wa_window_t* window)
 {
     if (!window)
     {
@@ -502,7 +533,8 @@ int wa_window_mainloop(wa_window_t* window)
     return 0;
 }
 
-void wa_window_set_fullscreen(wa_window_t* window, bool fullscreen)
+void 
+wa_window_set_fullscreen(wa_window_t* window, bool fullscreen)
 {
     if (!window)
     {
@@ -517,7 +549,8 @@ void wa_window_set_fullscreen(wa_window_t* window, bool fullscreen)
     window->state.window.fullscreen = fullscreen;
 }
 
-void wa_window_stop(wa_window_t* window)
+void 
+wa_window_stop(wa_window_t* window)
 {
     if (!window)
     {
@@ -527,7 +560,8 @@ void wa_window_stop(wa_window_t* window)
     window->running = false;
 }
 
-static void wa_window_egl_cleanup(wa_window_t* window)
+static void 
+wa_window_egl_cleanup(wa_window_t* window)
 {
     if (window->egl_display)
     {
@@ -539,7 +573,8 @@ static void wa_window_egl_cleanup(wa_window_t* window)
     }
 }
 
-static void wa_window_xkb_cleanup(wa_window_t* window)
+static void 
+wa_window_xkb_cleanup(wa_window_t* window)
 {
     if (window->xkb_context)
         xkb_context_unref(window->xkb_context);
@@ -549,7 +584,8 @@ static void wa_window_xkb_cleanup(wa_window_t* window)
         xkb_state_unref(window->xkb_state);
 }
 
-static void wa_window_wayland_cleanup(wa_window_t* window)
+static void 
+wa_window_wayland_cleanup(wa_window_t* window)
 {
     if (window->xdg_toplevel_decoration)
         zxdg_toplevel_decoration_v1_destroy(window->xdg_toplevel_decoration);
@@ -581,7 +617,8 @@ static void wa_window_wayland_cleanup(wa_window_t* window)
         wl_display_disconnect(window->wl_display);
 }
 
-void wa_window_delete(wa_window_t* window)
+void 
+wa_window_delete(wa_window_t* window)
 {
     if (!window)
         return;

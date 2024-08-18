@@ -72,8 +72,8 @@ compile_shader(GLenum type, const char* src)
 GLuint
 create_shader_program(void)
 {
-    const char* vert_src = readfile("../sandbox/vert.glsl");
-    const char* frag_src = readfile("../sandbox/frag.glsl");
+    const char* vert_src = readfile("sandbox/vert.glsl");
+    const char* frag_src = readfile("sandbox/frag.glsl");
 
     GLuint vert_shader = compile_shader(GL_VERTEX_SHADER, vert_src);
     GLuint frag_shader = compile_shader(GL_FRAGMENT_SHADER, frag_src);
@@ -102,7 +102,7 @@ create_shader_program(void)
 }
 
 static void
-app_draw(wa_window_t* window, void* data)
+app_draw(_WA_UNUSED wa_window_t* window, void* data)
 {
     app_t* app = data;
     glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -116,7 +116,7 @@ app_draw(wa_window_t* window, void* data)
 }
 
 static void
-app_event(wa_window_t* window, const wa_event_t* ev, void* data)
+app_event(wa_window_t* window, const wa_event_t* ev, _WA_UNUSED void* data)
 {
     if (ev->type == WA_EVENT_KEYBOARD)
     {

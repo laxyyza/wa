@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include "wa_event.h"
 
+#define _WA_UNUSED __attribute__((unused))
+
 typedef struct wa_window wa_window_t;
 
 typedef struct 

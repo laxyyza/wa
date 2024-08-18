@@ -3,7 +3,7 @@
 
 #include "wa.h"
 #include "xdg-shell.h"
-#include "xdg-decoration.h"
+#include "xdg-decoration-unstable-v1.h"
 
 #include <stdlib.h>
 #include <sys/mman.h>
