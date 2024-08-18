@@ -45,6 +45,7 @@ readfile(const char* filepath)
     buf = calloc(size + 1, sizeof(char));
     if (read(fd, buf, size) == -1)
         perror("read");
+    close(fd);
     return buf;
 }
 
