@@ -1,3 +1,4 @@
+#include "wa_event.h"
 #include "wa_wayland.h"
 #include "wa_log.h"
 
@@ -59,15 +60,19 @@ void wa_kb_key(void* data, struct wl_keyboard* keyboard, uint32_t serial, uint32
 {
     wa_window_t* window = data;
 
-    const uint32_t unicode = xkb_state_key_get_utf32(window->xkb_state, key + 8);
+    uint32_t keycode = key + 8;
+
+    xkb_keysym_t sym = xkb_state_key_get_one_sym(window->xkb_state, keycode);
     wa_event_t key_event = {
         .type = WA_EVENT_KEYBOARD,
-        .keyboard.key = key,
-        .keyboard.unicode = unicode,
-        .keyboard.state = (enum wa_keyboard_state)state
+        .keyboard.pressed = state,
+        .keyboard.sym = sym
     };
 
-    wa_log(WA_DEBUG, "Unicode: '%c'\n", unicode);
+    xkb_keysym_get_name(sym, key_event.keyboard.name, WA_KEY_NAME_LEN);
+
+    wa_log(WA_DEBUG, "Key pressed (%d): Sym: %u, name: '%s'\n",
+           state, sym, key_event.keyboard.name);
 
     window->state.callbacks.event(window, &key_event, window->state.user_data);
 }
