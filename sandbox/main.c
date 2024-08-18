@@ -1,10 +1,12 @@
 #include "wa.h"
+#include "wa_event.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <GL/glew.h>
+#include <xkbcommon/xkbcommon.h>
 
 typedef struct 
 {
@@ -112,6 +114,23 @@ app_draw(wa_window_t* window, void* data)
     glBindVertexArray(0);
 }
 
+static void
+app_event(wa_window_t* window, const wa_event_t* ev, void* data)
+{
+    if (ev->type == WA_EVENT_KEYBOARD)
+    {
+        if (ev->keyboard.pressed)
+        {
+            if (ev->keyboard.sym == XKB_KEY_f)
+            {
+                printf("YUP!\n");
+                wa_state_t* state = wa_window_get_state(window);
+                wa_window_set_fullscreen(window, !state->window.fullscreen);
+            }
+        }
+    }
+}
+
 int main(void)
 {
     int ret;
@@ -123,6 +142,7 @@ int main(void)
     wa_state_t* state = wa_window_get_state(window);
     state->callbacks.draw = app_draw;
     state->user_data = &app;
+    state->callbacks.event = app_event;
 
     GLuint VBO, VAO;
     glGenVertexArrays(1, &VAO);
