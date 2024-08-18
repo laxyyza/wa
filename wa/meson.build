@@ -25,7 +25,14 @@ subdir('wayland-protocols/')
 
 wa_deps += client_protos
 
+public_headers = [
+    'include/wa.h', 
+    'include/wa_event.h'
+]
+install_headers(public_headers, install_dir: 'include/wa')
+
 libwa = library('wa', wa_src,
     include_directories: wa_include,
-    dependencies: wa_deps
+    dependencies: wa_deps,
+    install: true
 )
