@@ -2,6 +2,9 @@
 #define _WA_EVENT_H_
 
 #include <stdint.h>
+#include <stdbool.h>
+
+#define WA_KEY_NAME_LEN 32
 
 enum wa_event_type
 {
@@ -10,20 +13,14 @@ enum wa_event_type
     WA_EVENT_RESIZE
 };
 
-enum wa_keyboard_state
-{
-    WA_KEYBOARD_PRESSED,
-    WA_KEYBOARD_RELEASED,
-};
-
 typedef struct  
 {
     enum wa_event_type type;
     union {
         struct {
-            uint32_t key;
-            uint32_t unicode;
-            enum wa_keyboard_state state;
+            uint32_t sym;
+            char name[WA_KEY_NAME_LEN];
+            bool pressed;
         } keyboard;
         struct {
             int x;
