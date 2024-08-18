@@ -123,7 +123,6 @@ app_event(wa_window_t* window, const wa_event_t* ev, void* data)
         {
             if (ev->keyboard.sym == XKB_KEY_f)
             {
-                printf("YUP!\n");
                 wa_state_t* state = wa_window_get_state(window);
                 wa_window_set_fullscreen(window, !state->window.fullscreen);
             }
