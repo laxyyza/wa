@@ -4,7 +4,7 @@ wa_src = files(
     'src/wa_wayland_input.c'
 )
 
-wa_private_include = include_directories('include/')
+wa_include = include_directories('include/')
 
 # Find Wayland dependencies
 wayland_client = dependency('wayland-client', required: true)
@@ -26,9 +26,6 @@ subdir('wayland-protocols/')
 wa_deps += client_protos
 
 libwa = library('wa', wa_src,
-    include_directories: [
-        wa_include,
-        wa_private_include
-    ],
+    include_directories: wa_include,
     dependencies: wa_deps
 )
