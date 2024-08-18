@@ -9,6 +9,7 @@ wa_private_include = include_directories('include/')
 # Find Wayland dependencies
 wayland_client = dependency('wayland-client', required: true)
 wayland_egl = dependency('wayland-egl', required: true)
+wayland_protocols = dependency('wayland-protocols', required: true)
 
 # Find OpenGL and EGL dependencies
 egl = dependency('egl', required: true)
@@ -17,8 +18,6 @@ glew = dependency('glew', required: true)
 
 # Find xkbcommon
 xkbcommon = dependency('xkbcommon', required: true)
-
-wayland_protocols = dependency('wayland-protocols', required: true)
 
 wa_deps = [wayland_client, wayland_egl, egl, gl, glew, xkbcommon]
 
