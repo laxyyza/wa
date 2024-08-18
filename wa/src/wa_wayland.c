@@ -510,7 +510,11 @@ void wa_window_set_fullscreen(wa_window_t* window, bool fullscreen)
         return;
     }
 
-    // ...
+    if (fullscreen)
+        xdg_toplevel_set_fullscreen(window->xdg_toplevel, NULL);
+    else
+        xdg_toplevel_unset_fullscreen(window->xdg_toplevel);
+    window->state.window.fullscreen = fullscreen;
 }
 
 void wa_window_stop(wa_window_t* window)
