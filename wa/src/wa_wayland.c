@@ -390,7 +390,12 @@ static bool
 wa_window_init_egl(wa_window_t* window)
 {
     const EGLint context_attr[] = {
-        EGL_CONTEXT_CLIENT_VERSION, 2,
+        EGL_CONTEXT_MAJOR_VERSION, 4,
+        EGL_CONTEXT_MINOR_VERSION, 6,
+
+        EGL_CONTEXT_OPENGL_PROFILE_MASK, 
+        EGL_CONTEXT_OPENGL_COMPATIBILITY_PROFILE_BIT,
+
         EGL_NONE
     };
     EGLint config_attr[] = {
@@ -399,7 +404,6 @@ wa_window_init_egl(wa_window_t* window)
         EGL_BLUE_SIZE,      8,
         EGL_ALPHA_SIZE,     8,
         EGL_DEPTH_SIZE,     24,
-        EGL_STENCIL_SIZE,   8,
         EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
         EGL_NONE
     };
@@ -411,7 +415,8 @@ wa_window_init_egl(wa_window_t* window)
         return false;
     }
 
-    if (!eglInitialize(window->egl_display, &window->egl_major, &window->egl_minor))
+    if (!eglInitialize(window->egl_display, 
+                       &window->egl_major, &window->egl_minor))
     {
         wa_logf(WA_FATAL, "EGL Initialize: %s\n", WA_EGL_ERROR);
         return false;
@@ -425,35 +430,55 @@ wa_window_init_egl(wa_window_t* window)
     if (!eglBindAPI(EGL_OPENGL_API))
     {
         wa_logf(WA_ERROR, "EGL Bind API: %s\n", WA_EGL_ERROR);
+        return false;
     }
 
-    if (!eglChooseConfig(window->egl_display, config_attr, &window->egl_config, 1, &n) || n != 1)
+    if (!eglChooseConfig(window->egl_display, config_attr, 
+                         &window->egl_config, 1, &n) || n != 1)
     {
         wa_logf(WA_ERROR, "EGL Choose Config: %s\n", WA_EGL_ERROR);
+        return false;
     }
 
-    if ((window->egl_context = eglCreateContext(window->egl_display, window->egl_config, EGL_NO_CONTEXT, context_attr)) == EGL_NO_CONTEXT)
+    if ((window->egl_context = eglCreateContext(window->egl_display, 
+                                                window->egl_config, 
+                                                EGL_NO_CONTEXT, 
+                                                context_attr)) == EGL_NO_CONTEXT)
     {
         wa_logf(WA_ERROR, "EGL Create Context: %s\n", WA_EGL_ERROR);
+        return false;
     }
 
-    if ((window->wl_egl_window = wl_egl_window_create(window->wl_surface, window->state.window.w, window->state.window.h)) == EGL_NO_SURFACE)
+    if ((window->wl_egl_window = wl_egl_window_create(window->wl_surface, 
+                                                      window->state.window.w, 
+                                                      window->state.window.h)) == EGL_NO_SURFACE)
     {
         wa_logf(WA_ERROR, "wl_egl_window_create(): %s\n", WA_EGL_ERROR);
+        return false;
     }
 
-    if ((window->egl_surface = eglCreateWindowSurface(window->egl_display, window->egl_config, (EGLNativeWindowType)window->wl_egl_window, NULL)) == EGL_NO_SURFACE)
+    if ((window->egl_surface = eglCreateWindowSurface(window->egl_display, 
+                                                      window->egl_config, 
+                                                      (EGLNativeWindowType)window->wl_egl_window, 
+                                                      NULL)) == EGL_NO_SURFACE)
     {
         wa_logf(WA_ERROR, "EGL Create Window Surface: %s\n", WA_EGL_ERROR);
+        return false;
     }
 
-    if (!eglMakeCurrent(window->egl_display, window->egl_surface, window->egl_surface, window->egl_context))
+    if (!eglMakeCurrent(window->egl_display, window->egl_surface, 
+                        window->egl_surface, window->egl_context))
     {
         wa_logf(WA_ERROR, "EGL Make current: %s\n", WA_EGL_ERROR);
+        return false;
     }
 
     if (glewInit() != GLEW_OK)
+    {
         wa_logf(WA_ERROR, "GLEW init failed: %s\n", glewGetErrorString(glGetError()));
+        return false;
+    }
+
 
     wa_log(WA_INFO, "OpenGL vendor: %s\n",
            glGetString(GL_VENDOR));
@@ -504,7 +529,6 @@ wa_window_create_from_state(wa_state_t* state)
         wa_window_delete(window);
         return NULL;
     }
-
 
     if (!wa_window_init_egl(window))
     {
