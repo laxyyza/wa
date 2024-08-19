@@ -44,14 +44,14 @@ wa_window_resize(wa_window_t* window)
 
     wl_egl_window_resize(window->wl_egl_window, w, h, 0, 0);
     glViewport(0, 0, w, h);
-    wa_log(WA_DEBUG, "Window resized: %dx%d\n", w, h);
+    wa_log(WA_VBOSE, "Window resized: %dx%d\n", w, h);
 }
 
 static void 
 wa_xdg_shell_ping(_WA_UNUSED void* data, struct xdg_wm_base* xdg_shell, uint32_t serial)
 {
     xdg_wm_base_pong(xdg_shell, serial);
-    wa_log(WA_DEBUG, "XDG Shell pong!\n");
+    wa_log(WA_VBOSE, "XDG Shell pong!\n");
 }
 
 static void 
@@ -97,11 +97,11 @@ wa_reg_glob(void* data, struct wl_registry* reg, uint32_t name, const char* inte
     }
     else
     {
-        wa_log(WA_DEBUG, "Interface: %u '%s' v%u\n", name, interface, version);
+        wa_log(WA_VBOSE, "Interface: %u '%s' v%u\n", name, interface, version);
         return;
     }
 
-    wa_log(WA_INFO, "Using Interface: %u '%s' v%u\n", name, interface, version);
+    wa_log(WA_VBOSE, "Using Interface: %u '%s' v%u\n", name, interface, version);
 }
 
 static void 
@@ -133,7 +133,7 @@ static void
 wa_xdg_surface_conf(_WA_UNUSED void* data, struct xdg_surface* xdg_surface, uint32_t serial)
 {
     xdg_surface_ack_configure(xdg_surface, serial);
-    wa_log(WA_DEBUG, "XDG Surface configire\n");
+    wa_log(WA_VBOSE, "XDG Surface configire\n");
 }
 
 static void 
@@ -195,7 +195,7 @@ wa_toplevel_conf(void* data, _WA_UNUSED struct xdg_toplevel* toplevel, int w, in
         }
     }
     window->state.window.state = window_state;
-    wa_log(WA_DEBUG, "XDG Toplevel configure\n");
+    wa_log(WA_VBOSE, "XDG Toplevel configure\n");
 }
 
 static void 
@@ -207,13 +207,13 @@ wa_toplevel_close(void* data, _WA_UNUSED struct xdg_toplevel* toplevel)
 
     window->running = false;
 
-    wa_log(WA_DEBUG, "XDG Toplevel close\n");
+    wa_log(WA_VBOSE, "XDG Toplevel close\n");
 }
 
 static void 
 wa_toplevel_conf_bounds(_WA_UNUSED void* data, _WA_UNUSED struct xdg_toplevel* toplevel, _WA_UNUSED int w, _WA_UNUSED int h)
 {
-    wa_log(WA_ERROR, "toplevel bounds: %dx%d\n", w, h);
+    // wa_log(WA_DEBUG, "toplevel bounds: %dx%d\n", w, h);
 }
 
 static void 
@@ -225,19 +225,19 @@ wa_toplevel_wm_caps(_WA_UNUSED void* data, _WA_UNUSED struct xdg_toplevel* tople
         switch (*cap)
         {
             case XDG_TOPLEVEL_WM_CAPABILITIES_MAXIMIZE:
-                wa_log(WA_DEBUG, "CAP: MAXIMIZE!\n");
+                wa_log(WA_VBOSE, "CAP: MAXIMIZE!\n");
                 break;
             case XDG_TOPLEVEL_WM_CAPABILITIES_MINIMIZE:
-                wa_log(WA_DEBUG, "CAP: MINIMIZE!\n");
+                wa_log(WA_VBOSE, "CAP: MINIMIZE!\n");
                 break;
             case XDG_TOPLEVEL_WM_CAPABILITIES_FULLSCREEN:
-                wa_log(WA_DEBUG, "CAP: FULLSCREEN!\n");
+                wa_log(WA_VBOSE, "CAP: FULLSCREEN!\n");
                 break;
             case XDG_TOPLEVEL_WM_CAPABILITIES_WINDOW_MENU:
-                wa_log(WA_DEBUG, "CAP: WINDOW MENU!\n");
+                wa_log(WA_VBOSE, "CAP: WINDOW MENU!\n");
                 break;
             default:
-                wa_log(WA_DEBUG, "CAP: Unknown %u\n", *cap);
+                wa_log(WA_VBOSE, "CAP: Unknown %u\n", *cap);
                 break;
         }
     }
@@ -248,38 +248,38 @@ wa_output_geo(_WA_UNUSED void* data, _WA_UNUSED struct wl_output* output,
               int x, int y, int phy_w, int phy_h, int subpixel, 
               const char* make, const char* model, int transform)
 {
-    wa_log(WA_INFO, "Output\n\tx/y:\t%dx%d\n\tphy w/h:\t%dx%d\n\tsubpixel:\t%d\n\tmake:\t'%s'\n\tmodel:\t'%s'\n\ttransform:\t%d\n",
+    wa_log(WA_VBOSE, "Output\n\tx/y:\t%dx%d\n\tphy w/h:\t%dx%d\n\tsubpixel:\t%d\n\tmake:\t'%s'\n\tmodel:\t'%s'\n\ttransform:\t%d\n",
             x, y, phy_w, phy_h, subpixel, make, model, transform);
 }
 
 static void 
 wa_output_mode(_WA_UNUSED void* data, _WA_UNUSED struct wl_output* output, uint32_t flags, int w, int h, int refresh_rate)
 {
-    wa_log(WA_INFO, "Mode: %dx%d @ %d (flags: %u)\n", w, h, refresh_rate, flags);
+    wa_log(WA_VBOSE, "Mode: %dx%d @ %d (flags: %u)\n", w, h, refresh_rate, flags);
 }
 
 static void 
 wa_output_done(_WA_UNUSED void* data, _WA_UNUSED struct wl_output* output)
 {
-    wa_log(WA_DEBUG, "%s()\n", __func__);
+    wa_log(WA_VBOSE, "%s()\n", __func__);
 }
 
 static void 
 wa_output_scale(_WA_UNUSED void* data, _WA_UNUSED struct wl_output* output, int factor)
 {
-    wa_log(WA_INFO, "Scale:\t%d\n", factor);
+    wa_log(WA_VBOSE, "Scale:\t%d\n", factor);
 }
 
 static void 
 wa_output_name(_WA_UNUSED void* data, _WA_UNUSED struct wl_output* output, const char* name)
 {
-    wa_log(WA_INFO, "Name:\t'%s'\n", name);
+    wa_log(WA_VBOSE, "Name:\t'%s'\n", name);
 }
 
 static void 
 wa_output_desc(_WA_UNUSED void* data, _WA_UNUSED struct wl_output* output, const char* desc)
 {
-    wa_log(WA_INFO, "Desc:\t'%s'\n", desc);
+    wa_log(WA_VBOSE, "Desc:\t'%s'\n", desc);
 }
 
 static const char* 
@@ -417,7 +417,7 @@ wa_window_init_egl(wa_window_t* window)
         return false;
     }
 
-    wa_log(WA_DEBUG, "EGL Display: major: %d, minor: %d\n\tVersion: %s\n\tVendor: %s\n\tExtenstions: %s\n", 
+    wa_log(WA_VBOSE, "EGL Display: major: %d, minor: %d\n\tVersion: %s\n\tVendor: %s\n\tExtenstions: %s\n", 
             window->egl_major, window->egl_minor, eglQueryString(window->egl_display, EGL_VERSION),
             eglQueryString(window->egl_display, EGL_VENDOR), 
             eglQueryString(window->egl_display, EGL_EXTENSIONS));

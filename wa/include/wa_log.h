@@ -8,6 +8,7 @@ enum wa_log_level
     WA_WARN,
     WA_INFO,
     WA_DEBUG,
+    WA_VBOSE,
 
     WA_LOG_LEVEL_LEN
 };

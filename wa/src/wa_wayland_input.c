@@ -51,13 +51,13 @@ wa_kb_map(void* data, _WA_UNUSED struct wl_keyboard* keyboard, uint32_t frmt, in
 void 
 wa_kb_enter(_WA_UNUSED void* data, _WA_UNUSED struct wl_keyboard* keyboard, uint32_t serial, _WA_UNUSED struct wl_surface* surface, _WA_UNUSED struct wl_array* array)
 {
-    wa_log(WA_DEBUG, "kb_enter: serial: %u\n", serial);
+    wa_log(WA_VBOSE, "kb_enter: serial: %u\n", serial);
 }
 
 void 
 wa_kb_leave(_WA_UNUSED void* data, _WA_UNUSED struct wl_keyboard* keyboard, uint32_t serial, _WA_UNUSED struct wl_surface* surface)
 {
-    wa_log(WA_DEBUG, "kb_leave: serial: %u\n", serial);
+    wa_log(WA_VBOSE, "kb_leave: serial: %u\n", serial);
 }
 
 void 
@@ -76,7 +76,7 @@ wa_kb_key(void* data, _WA_UNUSED struct wl_keyboard* keyboard, _WA_UNUSED uint32
 
     xkb_keysym_get_name(sym, key_event.keyboard.name, WA_KEY_NAME_LEN);
 
-    wa_log(WA_DEBUG, "Key pressed (%d): Sym: %u, name: '%s'\n",
+    wa_log(WA_VBOSE, "Key pressed (%d): Sym: %u, name: '%s'\n",
            state, sym, key_event.keyboard.name);
 
     window->state.callbacks.event(window, &key_event, window->state.user_data);
@@ -97,21 +97,21 @@ wa_kb_mod(void* data,
 void 
 wa_kb_rep(_WA_UNUSED void* data, _WA_UNUSED struct wl_keyboard* keyboard, int32_t rate, int32_t del)
 {
-    wa_log(WA_DEBUG, "kb_rep: rate: %u, del: %d\n", rate, del);
+    wa_log(WA_VBOSE, "kb_rep: rate: %u, del: %d\n", rate, del);
 }
 
 void 
 wa_point_enter(_WA_UNUSED void* data, _WA_UNUSED struct wl_pointer* pointer, _WA_UNUSED uint32_t serial, 
                _WA_UNUSED struct wl_surface* surface, wl_fixed_t surface_x, wl_fixed_t surface_y)
 {
-    wa_log(WA_DEBUG, "WA: point_enter(surxy: %dx%d)\n", surface_x, surface_y);
+    wa_log(WA_VBOSE, "WA: point_enter(surxy: %dx%d)\n", surface_x, surface_y);
 }
 
 void 
 wa_point_leave(_WA_UNUSED void* data, _WA_UNUSED struct wl_pointer* pointer, 
                _WA_UNUSED uint32_t serial, _WA_UNUSED struct wl_surface* surface)
 {
-    wa_log(WA_DEBUG, "WA: point_leave()\n");
+    wa_log(WA_VBOSE, "WA: point_leave()\n");
 }
 
 void 
@@ -137,7 +137,7 @@ void
 wa_point_button(_WA_UNUSED void* data, _WA_UNUSED struct wl_pointer* pointer, 
                 uint32_t serial, uint32_t time, uint32_t button, uint32_t state)
 {
-    wa_log(WA_DEBUG, "WA: point_button(serial: %u, time: %u) button: %u, state: %u\n", 
+    wa_log(WA_VBOSE, "WA: point_button(serial: %u, time: %u) button: %u, state: %u\n", 
            serial, time, button, state);
 }
 
@@ -145,7 +145,7 @@ void
 wa_point_axis(_WA_UNUSED void* data, _WA_UNUSED struct wl_pointer* pointer, 
               uint32_t time, uint32_t axis_type, wl_fixed_t value)
 {
-    wa_log(WA_DEBUG, "WA: point_axis(time: %u) type: %u, val: %u\n", time, axis_type, value);
+    wa_log(WA_VBOSE, "WA: point_axis(time: %u) type: %u, val: %u\n", time, axis_type, value);
 }
 
 void 
@@ -157,35 +157,35 @@ void
 wa_point_axis_src(_WA_UNUSED void* data, _WA_UNUSED struct wl_pointer* pointer, 
                        uint32_t axis_src)
 {
-    wa_log(WA_DEBUG, "WA: point_axis_src() %u\n", axis_src);
+    wa_log(WA_VBOSE, "WA: point_axis_src() %u\n", axis_src);
 }
 
 void 
 wa_point_axis_stop(_WA_UNUSED void* data, _WA_UNUSED struct wl_pointer* pointer, 
                    uint32_t time, uint32_t axis)
 {
-    wa_log(WA_DEBUG, "WA: point_axis_stop(time: %u) %u\n", time, axis);
+    wa_log(WA_VBOSE, "WA: point_axis_stop(time: %u) %u\n", time, axis);
 }
 
 void 
 wa_point_axis_discrete(_WA_UNUSED void* data, _WA_UNUSED struct wl_pointer* pointer, 
                        uint32_t axis, int32_t discrete)
 {
-    wa_log(WA_DEBUG, "WA: point_axis_discrete() axis: %u, discrete: %d\n", axis, discrete);
+    wa_log(WA_VBOSE, "WA: point_axis_discrete() axis: %u, discrete: %d\n", axis, discrete);
 }
 
 void 
 wa_point_axis120(_WA_UNUSED void* data, _WA_UNUSED struct wl_pointer* pointer, 
                  uint32_t axis_type, int value)
 {
-    wa_log(WA_DEBUG, "WA: point_axis120() type: %u, value: %d\n", axis_type, value);
+    wa_log(WA_VBOSE, "WA: point_axis120() type: %u, value: %d\n", axis_type, value);
 }
 
 void 
 wa_point_axis_dir(_WA_UNUSED void* data, _WA_UNUSED struct wl_pointer* pointer, 
                   uint32_t axis_type, uint32_t dir)
 {
-    wa_log(WA_DEBUG, "WA: point_axis_dir() type: %u, dir: %u\n", axis_type, dir);
+    wa_log(WA_VBOSE, "WA: point_axis_dir() type: %u, dir: %u\n", axis_type, dir);
 }
 
 void 
@@ -224,11 +224,11 @@ wa_seat_cap(void* data, struct wl_seat* seat, uint32_t cap)
         wl_pointer_add_listener(window->wl_pointer, &window->wl_pointer_listener, window);
     }
 
-    wa_log(WA_DEBUG, "wl_seat cap: 0x%X\n", cap);
+    wa_log(WA_VBOSE, "wl_seat cap: 0x%X\n", cap);
 }
 
 void 
 wa_seat_name(_WA_UNUSED void* data, _WA_UNUSED struct wl_seat* seat, const char* name)
 {
-    wa_log(WA_DEBUG, "wl_seat name: '%s'\n", name);
+    wa_log(WA_VBOSE, "wl_seat name: '%s'\n", name);
 }

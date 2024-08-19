@@ -23,6 +23,7 @@ static const char* wa_log_str[WA_LOG_LEVEL_LEN] = {
     "WA [" FG_ORANGE "WARN" FG_DEFAULT "]",
     "WA [" FG_GREEN "INFO" FG_DEFAULT "]",
     "WA [DEBUG]",
+    "WA [VBOSE]",
 };
 
 static const char* wa_log_color[WA_LOG_LEVEL_LEN] = {
@@ -30,7 +31,8 @@ static const char* wa_log_color[WA_LOG_LEVEL_LEN] = {
     FG_RED,             /* WA_ERROR */
     FG_DEFAULT,         /* WA_WARN */
     FG_DEFAULT,         /* WA_INFO */
-    FG_DEFAULT          /* WA_DEBUG */
+    FG_DEFAULT,          /* WA_DEBUG */
+    FG_DEFAULT          /* WA_VBOSE */
 };
 
 static enum wa_log_level wa_level = WA_DEBUG;
