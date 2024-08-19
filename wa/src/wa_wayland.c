@@ -455,6 +455,15 @@ wa_window_init_egl(wa_window_t* window)
     if (glewInit() != GLEW_OK)
         wa_logf(WA_ERROR, "GLEW init failed: %s\n", glewGetErrorString(glGetError()));
 
+    wa_log(WA_INFO, "OpenGL vendor: %s\n",
+           glGetString(GL_VENDOR));
+    wa_log(WA_INFO, "OpenGL renderer: %s\n",
+           glGetString(GL_RENDERER));
+    wa_log(WA_INFO, "OpenGL version: %s\n",
+           glGetString(GL_VERSION));
+    wa_log(WA_INFO, "OpenGL GLSL version: %s\n",
+           glGetString(GL_SHADING_LANGUAGE_VERSION));
+
     return true;
 }
 
