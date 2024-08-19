@@ -506,7 +506,6 @@ wa_window_create_from_state(wa_state_t* state)
     window->xkb_context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
 
     wl_display_dispatch(window->wl_display);
-    wa_draw(window);
     
     window->running = true;
     wa_log(WA_INFO, "Window \"%s\" %dx%d created\n", window->state.window.title, window->state.window.w, window->state.window.h);
@@ -564,6 +563,8 @@ wa_window_mainloop(wa_window_t* window)
         wa_logf(WA_FATAL, "%s() state callback(s) are NULL!", __func__);
         return -1;
     }
+
+    wa_draw(window);
 
     while (window->running)
     {
