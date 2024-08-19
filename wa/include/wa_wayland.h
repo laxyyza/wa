@@ -61,6 +61,17 @@ typedef struct wa_window
     bool running;
 } wa_window_t;
 
+typedef struct 
+{
+	uint32_t idx;
+	uint32_t w;
+	uint32_t h;
+	int refresh;
+	int32_t  scale;
+	const char* name;
+	const char* desc;
+} wa_monitor_t;
+
 
 /* _input */
 void wa_kb_map(void* data, struct wl_keyboard* keyboard, uint32_t frmt, int fd, uint32_t size);

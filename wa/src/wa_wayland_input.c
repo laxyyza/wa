@@ -1,6 +1,7 @@
 #include "wa_event.h"
 #include "wa_wayland.h"
 #include "wa_log.h"
+#include "xdg-shell.h"
 
 void 
 wa_kb_map(void* data, _WA_UNUSED struct wl_keyboard* keyboard, uint32_t frmt, int fd, uint32_t size)

@@ -17,11 +17,16 @@ typedef struct
     void (*close)(wa_window_t* window, void* data);
 } wa_callbacks_t;
 
+#define WA_STATE_FULLSCREEN 0x01
+#define WA_STATE_MAXIMIZED  0x02
+#define WA_STATE_ACTIVE     0x04
+#define WA_STATE_SUSPENDED  0x08
+
 typedef struct 
 {
     int w;
     int h;
-    bool fullscreen;
+    uint16_t state;
     const char* title;
 
     struct { /* Wayland specific */

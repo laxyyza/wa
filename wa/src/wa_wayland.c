@@ -39,6 +39,9 @@ wa_window_resize(wa_window_t* window)
     const int w = window->state.window.w;
     const int h = window->state.window.h;
 
+    if (window->wl_egl_window == NULL)
+        return;
+
     wl_egl_window_resize(window->wl_egl_window, w, h, 0, 0);
     glViewport(0, 0, w, h);
     wa_log(WA_DEBUG, "Window resized: %dx%d\n", w, h);
@@ -150,9 +153,12 @@ wa_init_xdg_decoration(wa_window_t* window)
 }
 
 static void 
-wa_toplevel_conf(void* data, _WA_UNUSED struct xdg_toplevel* toplevel, int w, int h, _WA_UNUSED struct wl_array* states)
+wa_toplevel_conf(void* data, _WA_UNUSED struct xdg_toplevel* toplevel, int w, int h, struct wl_array* states)
 {
     wa_window_t* window = data;
+
+    if (w == 0 || h == 0)
+        return;
 
     if (w != window->state.window.w || h != window->state.window.h)
     {
@@ -170,7 +176,26 @@ wa_toplevel_conf(void* data, _WA_UNUSED struct xdg_toplevel* toplevel, int w, in
         window->state.callbacks.event(window, &event, window->state.user_data);
     }
 
-    //wa_log(WA_DEBUG, "XDG Toplevel configure\n");
+    uint16_t window_state = 0;
+
+    uint32_t* state;
+    wl_array_for_each(state, states)
+    {
+        switch (*state)
+        {
+            case XDG_TOPLEVEL_STATE_FULLSCREEN:
+                window_state |= WA_STATE_FULLSCREEN;
+                break;
+            case XDG_TOPLEVEL_STATE_MAXIMIZED:
+                window_state |= WA_STATE_MAXIMIZED;
+                break;
+            case XDG_TOPLEVEL_STATE_ACTIVATED:
+                window_state |= WA_STATE_SUSPENDED;
+                break;
+        }
+    }
+    window->state.window.state = window_state;
+    wa_log(WA_DEBUG, "XDG Toplevel configure\n");
 }
 
 static void 
@@ -188,11 +213,34 @@ wa_toplevel_close(void* data, _WA_UNUSED struct xdg_toplevel* toplevel)
 static void 
 wa_toplevel_conf_bounds(_WA_UNUSED void* data, _WA_UNUSED struct xdg_toplevel* toplevel, _WA_UNUSED int w, _WA_UNUSED int h)
 {
+    wa_log(WA_ERROR, "toplevel bounds: %dx%d\n", w, h);
 }
 
 static void 
 wa_toplevel_wm_caps(_WA_UNUSED void* data, _WA_UNUSED struct xdg_toplevel* toplevel, _WA_UNUSED struct wl_array* caps)
 {
+    uint32_t* cap;
+    wl_array_for_each(cap, caps)
+    {
+        switch (*cap)
+        {
+            case XDG_TOPLEVEL_WM_CAPABILITIES_MAXIMIZE:
+                wa_log(WA_DEBUG, "CAP: MAXIMIZE!\n");
+                break;
+            case XDG_TOPLEVEL_WM_CAPABILITIES_MINIMIZE:
+                wa_log(WA_DEBUG, "CAP: MINIMIZE!\n");
+                break;
+            case XDG_TOPLEVEL_WM_CAPABILITIES_FULLSCREEN:
+                wa_log(WA_DEBUG, "CAP: FULLSCREEN!\n");
+                break;
+            case XDG_TOPLEVEL_WM_CAPABILITIES_WINDOW_MENU:
+                wa_log(WA_DEBUG, "CAP: WINDOW MENU!\n");
+                break;
+            default:
+                wa_log(WA_DEBUG, "CAP: Unknown %u\n", *cap);
+                break;
+        }
+    }
 }
 
 static void 
@@ -307,10 +355,6 @@ wa_window_init_wayland(wa_window_t* window)
         wa_logf(WA_FATAL, "Failed to get XDG Toplevel!\n");
         return false;
     }
-    wl_surface_commit(window->wl_surface);
-    wl_display_roundtrip(window->wl_display);
-
-    wa_init_xdg_decoration(window);
     window->xdg_toplevel_listener.configure = wa_toplevel_conf;
     window->xdg_toplevel_listener.close = wa_toplevel_close;
     window->xdg_toplevel_listener.configure_bounds = wa_toplevel_conf_bounds;
@@ -323,8 +367,7 @@ wa_window_init_wayland(wa_window_t* window)
     const char* app_id = (window->state.window.wayland.app_id) ? window->state.window.wayland.app_id : WA_DEFAULT_APP_ID;
     xdg_toplevel_set_app_id(window->xdg_toplevel, app_id);
 
-    if (window->state.window.fullscreen)
-        xdg_toplevel_set_fullscreen(window->xdg_toplevel, window->wl_outputs[0]);
+    wa_window_set_fullscreen(window, window->state.window.state & WA_STATE_FULLSCREEN);
 
     /* wl_output */
     window->wl_output_listener.geometry = wa_output_geo;
@@ -336,6 +379,10 @@ wa_window_init_wayland(wa_window_t* window)
     for (size_t i = 0; i < window->n_outputs; i++)
         wl_output_add_listener(window->wl_outputs[i], &window->wl_output_listener, window);
 
+    wa_init_xdg_decoration(window);
+
+    wl_surface_commit(window->wl_surface);
+    wl_display_roundtrip(window->wl_display);
     return true;
 }
 
@@ -417,7 +464,7 @@ wa_window_create(const char* title, int w, int h, bool fullscreen)
     wa_state_t state;
     wa_state_set_default(&state);
     state.window.title = title;
-    state.window.fullscreen = fullscreen;
+    state.window.state = (fullscreen) ? WA_STATE_FULLSCREEN : 0;
     state.window.w = w;
     state.window.h = h;
 
@@ -448,6 +495,7 @@ wa_window_create_from_state(wa_state_t* state)
         wa_window_delete(window);
         return NULL;
     }
+
 
     if (!wa_window_init_egl(window))
     {
@@ -481,7 +529,6 @@ wa_state_set_default(wa_state_t* state)
     state->callbacks.update = wa_default_update;
     state->callbacks.close = wa_default_close;
     state->callbacks.draw = wa_default_draw;
-    state->window.fullscreen = true;
     state->window.w = 100;
     state->window.h = 100;
     state->window.title = WA_DEFAULT_TITLE;
@@ -546,7 +593,6 @@ wa_window_set_fullscreen(wa_window_t* window, bool fullscreen)
         xdg_toplevel_set_fullscreen(window->xdg_toplevel, NULL);
     else
         xdg_toplevel_unset_fullscreen(window->xdg_toplevel);
-    window->state.window.fullscreen = fullscreen;
 }
 
 void 
@@ -569,6 +615,7 @@ wa_window_egl_cleanup(wa_window_t* window)
             eglDestroySurface(window->egl_display, window->egl_surface);
         if (window->egl_context)
             eglDestroyContext(window->egl_display, window->egl_context);
+        eglMakeCurrent(window->egl_display, 0, 0, 0);
         eglTerminate(window->egl_display);
     }
 }
