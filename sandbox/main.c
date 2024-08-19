@@ -7,13 +7,18 @@
 #include <sys/stat.h>
 #include <GL/glew.h>
 #include <xkbcommon/xkbcommon.h>
+#include <signal.h>
 
 typedef struct 
 {
-    GLuint shader_program;
-    GLuint VBO;
-    GLuint VAO;
+    uint32_t shader_program;
+    uint32_t VBO;
+    uint32_t VAO;
+    wa_window_t* window;
+    wa_state_t state;
 } app_t;
+
+app_t* app_ptr;
 
 float vertices[] = {
 /*      vertices                color           */
@@ -125,24 +130,51 @@ app_event(wa_window_t* window, const wa_event_t* ev, _WA_UNUSED void* data)
             if (ev->keyboard.sym == XKB_KEY_f)
             {
                 wa_state_t* state = wa_window_get_state(window);
-                wa_window_set_fullscreen(window, !state->window.fullscreen);
+                wa_window_set_fullscreen(window, !(state->window.state & WA_STATE_FULLSCREEN));
             }
         }
     }
 }
 
+static void
+app_update(_WA_UNUSED wa_window_t* window, _WA_UNUSED void* user_data)
+{
+
+}
+
+static void
+app_close(_WA_UNUSED wa_window_t* window, _WA_UNUSED void* user_data)
+{
+
+}
+
+static void
+sighandle(_WA_UNUSED int signum)
+{
+    wa_window_stop(app_ptr->window);
+}
+
 int main(void)
 {
     int ret;
-    wa_window_t* window;
     app_t app = {0};
-    
-    if ((window = wa_window_create("Test", 900, 600, false)) == NULL)
-        return -1;
-    wa_state_t* state = wa_window_get_state(window);
+    app_ptr = &app;
+    wa_state_t* state = &app.state;
     state->callbacks.draw = app_draw;
     state->user_data = &app;
     state->callbacks.event = app_event;
+    state->window.state = WA_STATE_FULLSCREEN;
+    state->window.title = "WA Test";
+    state->window.wayland.app_id = "yes";
+    state->window.w = 600;
+    state->window.h = 400;
+    state->callbacks.update = app_update;
+    state->callbacks.close = app_close;
+
+    signal(SIGINT, sighandle);
+
+    if ((app.window = wa_window_create_from_state(state)) == NULL)
+        return -1;
 
     GLuint VBO, VAO;
     glGenVertexArrays(1, &VAO);
@@ -167,9 +199,10 @@ int main(void)
     app.VAO = VAO;
     app.VBO = VBO;
 
-    ret = wa_window_mainloop(window);
+    ret = wa_window_mainloop(app.window);
 
-    wa_window_delete(window);
+    glDeleteProgram(app.shader_program);
+    wa_window_delete(app.window);
 
     printf("exit code: %d\n", ret);
 
