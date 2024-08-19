@@ -1,5 +1,6 @@
 #include "wa.h"
 #include "wa_event.h"
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -22,9 +23,15 @@ app_t* app_ptr;
 
 float vertices[] = {
 /*      vertices                color           */
-    0.0f,  0.8f,  0.0f,     1.0f, 0.0f, 0.0f,
-   -0.8f, -0.8f, 0.0f,      0.0f, 1.0f, 0.0f,
-    0.8f, -0.8f, 0.0f,      0.0f, 0.0f, 1.0f
+   -0.8f, -0.8f, 
+    0.8f, -0.8f,
+    0.8f,  0.8f,
+   -0.8f,  0.8f,
+};
+
+uint8_t indices[] = {
+    0, 1, 2,
+    2, 3, 0
 };
 
 size_t
@@ -107,17 +114,19 @@ create_shader_program(void)
 }
 
 static void
-app_draw(_WA_UNUSED wa_window_t* window, void* data)
+app_draw(_WA_UNUSED wa_window_t* window, _WA_UNUSED void* data)
 {
-    app_t* app = data;
+    // app_t* app = data;
     glClearColor(0.0, 0.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    glUseProgram(app->shader_program);
+    // glUseProgram(app->shader_program);
 
-    glBindVertexArray(app->VAO);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
-    glBindVertexArray(0);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0);
+
+    // glBindVertexArray(app->VAO);
+    // glDrawArrays(GL_TRIANGLES, 0, 6);
+    // glBindVertexArray(0);
 }
 
 static void
@@ -176,28 +185,36 @@ int main(void)
     if ((app.window = wa_window_create_from_state(state)) == NULL)
         return -1;
 
-    GLuint VBO, VAO;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
+    // GLuint VBO, VAO;
+    // glGenVertexArrays(1, &VAO);
+    // glGenBuffers(1, &VBO);
+    //
+    // glBindVertexArray(VAO);
 
-    glBindVertexArray(VAO);
+    uint32_t buffer;
+    glGenBuffers(1, &buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, buffer);
+    glBufferData(GL_ARRAY_BUFFER, 6 * 2 * sizeof(float), vertices, GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
 
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
+    uint32_t ibo;
+    glGenBuffers(1, &ibo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(uint8_t), indices, GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    glBindVertexArray(0);
+    // glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2 * sizeof(float)));
+    // glEnableVertexAttribArray(1);
+
+    // glBindBuffer(GL_ARRAY_BUFFER, 0);
+    // glBindVertexArray(0);
 
     app.shader_program = create_shader_program();
-    app.VAO = VAO;
-    app.VBO = VBO;
+    // app.VAO = VAO;
+    // app.VBO = VBO;
+    glUseProgram(app.shader_program);
 
     ret = wa_window_mainloop(app.window);
 
