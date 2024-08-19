@@ -163,6 +163,22 @@ sighandle(_WA_UNUSED int signum)
     wa_window_stop(app_ptr->window);
 }
 
+// Define the debug callback
+void opengl_debug_callback(GLenum source, GLenum type, GLuint id,
+                                    GLenum severity, _WA_UNUSED GLsizei length,
+                                    const GLchar *message, _WA_UNUSED const void *data) {
+    app_t* app = (app_t*)data;
+    wa_window_stop(app->window);
+    fprintf(stderr, "OpenGL Debug Message:\n");
+    fprintf(stderr, "Source: 0x%x\n", source);
+    fprintf(stderr, "Type: 0x%x\n", type);
+    fprintf(stderr, "ID: %d\n", id);
+    fprintf(stderr, "Severity: 0x%x\n", severity);
+    fprintf(stderr, "Message: %s\n", message);
+    fprintf(stderr, "----------------\n");
+
+}
+
 int main(void)
 {
     int ret;
@@ -184,6 +200,12 @@ int main(void)
 
     if ((app.window = wa_window_create_from_state(state)) == NULL)
         return -1;
+
+        // Enable debug output
+    glEnable(GL_DEBUG_OUTPUT);
+    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+
+    glDebugMessageCallback(opengl_debug_callback, &app);
 
     // GLuint VBO, VAO;
     // glGenVertexArrays(1, &VAO);
