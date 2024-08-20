@@ -1,8 +1,10 @@
 #include "wa.h"
 #include "wa_event.h"
+#include "wa_log.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -12,11 +14,47 @@
 
 typedef struct 
 {
+    union {
+        float x;
+        float r;
+    };
+    union {
+        float y;
+        float g;
+    };
+    union {
+        float z;
+        float b;
+    };
+    union {
+        float w;
+        float a;
+    };
+} vec4_t;
+
+inline vec4_t 
+vec4(float x, float y, float z, float w)
+{
+    vec4_t vec = {
+        .x = x,
+        .y = y,
+        .z = z,
+        .w = w
+    };
+    return vec;
+}
+
+typedef struct 
+{
     uint32_t shader_program;
     uint32_t VBO;
     uint32_t VAO;
     wa_window_t* window;
     wa_state_t state;
+    int32_t color_uniform;
+    vec4_t color;
+    vec4_t og_color;
+    bool change_color;
 } app_t;
 
 app_t* app_ptr;
@@ -40,6 +78,13 @@ fsize(int fd)
     struct stat stat;
     fstat(fd, &stat);
     return stat.st_size;
+}
+
+static void
+set_color(const app_t* app)
+{
+    const vec4_t* c = &app->color;
+    glUniform4f(app->color_uniform, c->r, c->g, c->b, c->a);
 }
 
 const char*
@@ -114,13 +159,26 @@ create_shader_program(void)
 }
 
 static void
-app_draw(_WA_UNUSED wa_window_t* window, _WA_UNUSED void* data)
+app_draw(_WA_UNUSED wa_window_t* window, void* data)
 {
-    // app_t* app = data;
+    app_t* app = data;
     glClearColor(0.0, 0.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
 
     // glUseProgram(app->shader_program);
+    static bool add = true;
+    if (app->change_color)
+    {
+        if (add)
+            app->color.g += 0.01;
+        else
+            app->color.g -= 0.01;
+
+        if (app->color.g >= 1.0 || app->color.g <= 0.0)
+            add = !add;
+
+        set_color(app);
+    }
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0);
 
@@ -130,8 +188,9 @@ app_draw(_WA_UNUSED wa_window_t* window, _WA_UNUSED void* data)
 }
 
 static void
-app_event(wa_window_t* window, const wa_event_t* ev, _WA_UNUSED void* data)
+app_event(wa_window_t* window, const wa_event_t* ev, void* data)
 {
+    app_t* app = data;
     if (ev->type == WA_EVENT_KEYBOARD)
     {
         if (ev->keyboard.pressed)
@@ -141,14 +200,23 @@ app_event(wa_window_t* window, const wa_event_t* ev, _WA_UNUSED void* data)
                 wa_state_t* state = wa_window_get_state(window);
                 wa_window_set_fullscreen(window, !(state->window.state & WA_STATE_FULLSCREEN));
             }
+            else if (ev->keyboard.sym == XKB_KEY_r)
+            {
+                app->color.r = 0.0;
+                app->color.b = 0.0;
+            }
+        }
+        else if (ev->keyboard.sym == XKB_KEY_r)
+        {
+            app->color = app->og_color;
         }
     }
 }
 
 static void
-app_update(_WA_UNUSED wa_window_t* window, _WA_UNUSED void* user_data)
+app_update(_WA_UNUSED wa_window_t* window, 
+           _WA_UNUSED void* user_data)
 {
-
 }
 
 static void
@@ -179,6 +247,20 @@ void opengl_debug_callback(GLenum source, GLenum type, GLuint id,
 
 }
 
+static void
+app_focus(_WA_UNUSED wa_window_t* window, void* data)
+{
+    app_t* app = data;
+    app->change_color = true;
+}
+
+static void
+app_unfocus(_WA_UNUSED wa_window_t* window, void* data)
+{
+    app_t* app = data;
+    app->change_color = false;
+}
+
 int main(void)
 {
     int ret;
@@ -188,13 +270,18 @@ int main(void)
     state->callbacks.draw = app_draw;
     state->user_data = &app;
     state->callbacks.event = app_event;
-    state->window.state = WA_STATE_FULLSCREEN;
+    state->window.state = 0;
     state->window.title = "WA Test";
     state->window.wayland.app_id = "yes";
     state->window.w = 600;
     state->window.h = 400;
     state->callbacks.update = app_update;
     state->callbacks.close = app_close;
+    state->callbacks.focus = app_focus;
+    state->callbacks.unfocus = app_unfocus;
+
+    app.color = vec4(0.7, 0.0, 0.7, 1.0);
+    app.og_color = app.color;
 
     signal(SIGINT, sighandle);
 
@@ -212,11 +299,15 @@ int main(void)
     // glGenBuffers(1, &VBO);
     //
     // glBindVertexArray(VAO);
+    
+    uint32_t vao;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
 
     uint32_t buffer;
     glGenBuffers(1, &buffer);
     glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, 6 * 2 * sizeof(float), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, 4 * 2 * sizeof(float), vertices, GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
@@ -237,6 +328,9 @@ int main(void)
     // app.VAO = VAO;
     // app.VBO = VBO;
     glUseProgram(app.shader_program);
+
+    app.color_uniform = glGetUniformLocation(app.shader_program, "color");
+    set_color(&app);
 
     ret = wa_window_mainloop(app.window);
 
