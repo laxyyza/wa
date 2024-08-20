@@ -51,13 +51,17 @@ wa_kb_map(void* data, _WA_UNUSED struct wl_keyboard* keyboard, uint32_t frmt, in
 void 
 wa_kb_enter(_WA_UNUSED void* data, _WA_UNUSED struct wl_keyboard* keyboard, uint32_t serial, _WA_UNUSED struct wl_surface* surface, _WA_UNUSED struct wl_array* array)
 {
+    wa_window_t* window = data;
     wa_log(WA_VBOSE, "kb_enter: serial: %u\n", serial);
+    window->state.callbacks.focus(window, window->state.user_data);
 }
 
 void 
 wa_kb_leave(_WA_UNUSED void* data, _WA_UNUSED struct wl_keyboard* keyboard, uint32_t serial, _WA_UNUSED struct wl_surface* surface)
 {
+    wa_window_t* window = data;
     wa_log(WA_VBOSE, "kb_leave: serial: %u\n", serial);
+    window->state.callbacks.unfocus(window, window->state.user_data);
 }
 
 void 

@@ -15,6 +15,8 @@ typedef struct
     void (*update)(wa_window_t* window, void* data);
     void (*draw)(wa_window_t* window, void* data);
     void (*close)(wa_window_t* window, void* data);
+    void (*focus)(wa_window_t* window, void* data);
+    void (*unfocus)(wa_window_t* window, void* data);
 } wa_callbacks_t;
 
 #define WA_STATE_FULLSCREEN 0x01
