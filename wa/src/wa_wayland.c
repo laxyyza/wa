@@ -33,6 +33,16 @@ wa_default_close(_WA_UNUSED wa_window_t* window, _WA_UNUSED void* data)
 {
 }
 
+static void
+wa_default_focus(_WA_UNUSED wa_window_t* window, _WA_UNUSED void* data)
+{
+}
+
+static void
+wa_default_unfocus(_WA_UNUSED wa_window_t* window, _WA_UNUSED void* data)
+{
+}
+
 static void 
 wa_window_resize(wa_window_t* window)
 {
@@ -561,6 +571,8 @@ wa_state_set_default(wa_state_t* state)
     state->callbacks.update = wa_default_update;
     state->callbacks.close = wa_default_close;
     state->callbacks.draw = wa_default_draw;
+    state->callbacks.focus = wa_default_focus;
+    state->callbacks.unfocus = wa_default_unfocus;
     state->window.w = 100;
     state->window.h = 100;
     state->window.title = WA_DEFAULT_TITLE;
