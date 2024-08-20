@@ -190,7 +190,7 @@ wa_toplevel_conf(void* data, _WA_UNUSED struct xdg_toplevel* toplevel, int w, in
                 window_state |= WA_STATE_MAXIMIZED;
                 break;
             case XDG_TOPLEVEL_STATE_ACTIVATED:
-                window_state |= WA_STATE_SUSPENDED;
+                window_state |= WA_STATE_ACTIVE;
                 break;
         }
     }
@@ -394,7 +394,7 @@ wa_window_init_egl(wa_window_t* window)
         EGL_CONTEXT_MINOR_VERSION, 6,
 
         EGL_CONTEXT_OPENGL_PROFILE_MASK, 
-        EGL_CONTEXT_OPENGL_COMPATIBILITY_PROFILE_BIT,
+        EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT,
 
         EGL_NONE
     };
