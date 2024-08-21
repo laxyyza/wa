@@ -1,5 +1,9 @@
 # WA - Window Abstraction
-My Simple Window Abstraction library in C
+A Simple Window Abstraction Library in C
 
-> Currently only supports Wayland.
-> But it is possible to support X11, win32, etc
+>[!NOTE]
+>This is a very new, very buggy, and very clunky project. It’s in the early stages, and I’m still figuring out how to make it all work. I don't quite know what I’m doing yet!
+
+### Currently Supported:
+- **Wayland**
+- **Win32**
