@@ -4,6 +4,7 @@
 #include "wa.h"
 #include "xdg-shell.h"
 #include "xdg-decoration-unstable-v1.h"
+#include "tearing-control-v1.h"
 
 #include <stdlib.h>
 #include <sys/mman.h>
@@ -34,6 +35,9 @@ typedef struct wa_window
     struct xdg_surface*     xdg_surface;
     struct zxdg_decoration_manager_v1* xdg_decoration_manager;
     struct zxdg_toplevel_decoration_v1* xdg_toplevel_decoration;
+
+    struct wp_tearing_control_manager_v1* tearing_manager;
+    struct wp_tearing_control_v1* tearing;
 
     struct wl_registry_listener     wl_registry_listener;
     struct wl_callback_listener     wl_frame_done_listener;

@@ -105,6 +105,10 @@ wa_reg_glob(void* data, struct wl_registry* reg, uint32_t name, const char* inte
     {
         window->xdg_decoration_manager = wl_registry_bind(reg, name, &zxdg_decoration_manager_v1_interface, version);
     }
+    else if (WA_CMP(wp_tearing_control_manager_v1_interface.name))
+    {
+        window->tearing_manager = wl_registry_bind(reg, name, &wp_tearing_control_manager_v1_interface, version);
+    }
     else
     {
         wa_log(WA_VBOSE, "Interface: %u '%s' v%u\n", name, interface, version);
@@ -132,7 +136,13 @@ static void
 wa_frame_done(void* data, struct wl_callback* callback, _WA_UNUSED uint32_t callback_data)
 {
     wa_window_t* window = data;
+
     wl_callback_destroy(callback);
+
+    // If VSync is disabled, do the drawing in the mainloop.
+    if (window->state.window.vsync == false)
+        return;
+
     callback = wl_surface_frame(window->wl_surface);
     wl_callback_add_listener(callback, &window->wl_frame_done_listener, data);
 
@@ -391,6 +401,14 @@ wa_window_init_wayland(wa_window_t* window)
 
     wa_init_xdg_decoration(window);
 
+    if (window->tearing_manager)
+        window->tearing = wp_tearing_control_manager_v1_get_tearing_control(window->tearing_manager, window->wl_surface);
+    else
+    {
+        wa_log(WA_DEBUG, "Wayland Compositor doesn't support tearing control.\n");
+        window->state.window.vsync = true;
+    }
+
     wl_surface_commit(window->wl_surface);
     wl_display_roundtrip(window->wl_display);
     return true;
@@ -489,7 +507,6 @@ wa_window_init_egl(wa_window_t* window)
         return false;
     }
 
-
     return true;
 }
 
@@ -537,6 +554,8 @@ wa_window_create_from_state(wa_state_t* state)
         return NULL;
     }
 
+    wa_window_vsync(window, window->state.window.vsync);
+
     window->xkb_context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
 
     wl_display_dispatch(window->wl_display);
@@ -568,6 +587,7 @@ wa_state_set_default(wa_state_t* state)
     state->window.h = 100;
     state->window.title = WA_DEFAULT_TITLE;
     state->window.wayland.app_id = WA_DEFAULT_APP_ID;
+    state->window.vsync = true;
 }
 
 void 
@@ -612,6 +632,8 @@ wa_window_mainloop(wa_window_t* window)
         }
 
         window->state.callbacks.update(window, window->state.user_data);
+        if (window->state.window.vsync == false)
+            wa_draw(window);
     }
 
     return 0;
@@ -714,4 +736,40 @@ wa_window_delete(wa_window_t* window)
     free(window);
 
     wa_log(WA_DEBUG, "Cleanup done.\n");
+}
+
+static void 
+wa_wayland_tear(wa_window_t* window, bool tear)
+{
+    enum wp_tearing_control_v1_presentation_hint hint;
+
+    if (window->tearing == NULL)
+        return; // This means compositor doesn't support tearing control.
+
+    if (tear)
+        hint = WP_TEARING_CONTROL_V1_PRESENTATION_HINT_ASYNC;
+    else
+    {
+        hint = WP_TEARING_CONTROL_V1_PRESENTATION_HINT_VSYNC;
+
+        // Use the frame callback again.
+        window->frame_done_callback = wl_surface_frame(window->wl_surface);
+        wl_callback_add_listener(window->frame_done_callback, 
+                                 &window->wl_frame_done_listener, 
+                                 window);
+        
+        wa_draw(window);
+    }
+
+    wp_tearing_control_v1_set_presentation_hint(window->tearing, hint);
+}
+
+void 
+wa_window_vsync(wa_window_t* window, bool vsync)
+{
+    eglSwapInterval(window->egl_display, vsync);
+    wa_wayland_tear(window, !vsync);
+    window->state.window.vsync = vsync;
+
+    wa_log(WA_DEBUG, "Set VSync: %d\n", vsync);
 }

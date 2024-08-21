@@ -15,11 +15,13 @@ wayland_scanner_client = generator(
 )
 
 xdg_shell_proto = 'stable/xdg-shell/xdg-shell.xml'
+tearing_control_proto = 'staging/tearing-control/tearing-control-v1.xml'
 xdg_decoration_proto = 'unstable/xdg-decoration/xdg-decoration-unstable-v1.xml'
 
 client_protocols = [
     [wl_protcol_dir, xdg_shell_proto],
     [wl_protcol_dir, xdg_decoration_proto],
+    [wl_protcol_dir, tearing_control_proto],
 ]
 
 client_proto_src = []
