@@ -29,9 +29,9 @@ typedef struct
     int h;
     uint16_t state;
     const char* title;
+    bool vsync;
 
     struct { /* Wayland specific */
-        bool tear;
         const char* app_id;
     } wayland;
 } wa_window_state_t;
@@ -52,6 +52,7 @@ int             wa_window_mainloop(wa_window_t* window);
 void            wa_window_set_fullscreen(wa_window_t* window, bool fullscreen);
 void            wa_window_stop(wa_window_t* window);
 void            wa_window_delete(wa_window_t* window);
+void            wa_window_vsync(wa_window_t* window, bool vsync);
 
 void            wa_print_opengl(void);
 
