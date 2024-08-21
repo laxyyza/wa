@@ -8,4 +8,4 @@ project('wa', 'c',
 )
 
 subdir('wa/')
-subdir('sandbox/')
+subdir('tests/')

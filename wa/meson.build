@@ -9,6 +9,8 @@ wa_deps = []
 gl = dependency('gl', required: true)
 glew = dependency('glew', required: true)
 
+message('glew,', glew.name())
+
 if meson.is_cross_build()
     add_global_arguments(
         '-Wno-error=cast-function-type',

@@ -119,8 +119,8 @@ compile_shader(GLenum type, const char* src)
 GLuint
 create_shader_program(void)
 {
-    const char* vert_src = readfile("sandbox/vert.glsl");
-    const char* frag_src = readfile("sandbox/frag.glsl");
+    const char* vert_src = readfile("tests/vert.glsl");
+    const char* frag_src = readfile("tests/frag.glsl");
 
     GLuint vert_shader = compile_shader(GL_VERTEX_SHADER, vert_src);
     GLuint frag_shader = compile_shader(GL_FRAGMENT_SHADER, frag_src);
