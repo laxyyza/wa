@@ -81,6 +81,10 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     wa_window_t* window = (wa_window_t*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
     switch (msg)
     {
+        case WM_CLOSE:
+            DestroyWindow(hwnd);
+            wa_log(WA_DEBUG, "WM_CLOSE\n");
+            return 0;
         case WM_DESTROY:
             PostQuitMessage(0);
             wa_log(WA_DEBUG, "WM_DESTROY\n");
@@ -139,6 +143,9 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
                                           window->state.user_data);
             return 0;
         }
+        case WM_PAINT:
+            wa_draw(window);
+            return 0;
     }
     return DefWindowProc(hwnd, msg, wparam, lparam);
 }
@@ -153,30 +160,39 @@ wa_window_t*
 wa_window_create_from_state(wa_state_t* state)
 {
     wa_window_t* window;
-    const char* class_name = "class name?";
 
     window = calloc(1, sizeof(wa_window_t));
     memcpy(&window->state, state, sizeof(wa_state_t));
     window->instance = GetModuleHandle(NULL);
+    window->class_name = "class name?";
 
     WNDCLASS wc = {0};
     wc.lpfnWndProc = window_proc;
     wc.hInstance = window->instance;
-    wc.lpszClassName = class_name;
+    wc.lpszClassName = window->class_name;
     wc.hIcon = LoadIcon(NULL, IDI_WINLOGO);
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
 
     RegisterClass(&wc);
 
+    DWORD style = WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU;
+    RECT* rect = &window->rect;
+    rect->left = 250;
+    rect->top = 250;
+    rect->right = rect->left + window->state.window.w;
+    rect->bottom = rect->top + window->state.window.h;
+
+    AdjustWindowRect(rect, style, false);
+
     window->hwnd = CreateWindowEx(
         0, 
-        class_name, 
+        window->class_name, 
         state->window.title,
-        WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, 
-        CW_USEDEFAULT, 
-        CW_USEDEFAULT, 
-        CW_USEDEFAULT,
+        style,
+        rect->left, 
+        rect->top, 
+        rect->right - rect->left, 
+        rect->bottom - rect->top,
         NULL, 
         NULL, 
         window->instance, 
@@ -293,9 +309,8 @@ wa_window_mainloop(wa_window_t* window)
             TranslateMessage(&msg);
             DispatchMessage(&msg);
         }
-
-        wa_draw(window);
         window->state.callbacks.update(window, window->state.user_data);
+        // wa_draw(window);
     }
     window->state.callbacks.close(window, window->state.user_data);
     return 0;
@@ -358,5 +373,6 @@ wa_window_stop(wa_window_t* window)
 void 
 wa_window_delete(wa_window_t* window)
 {
+    UnregisterClass(window->class_name, window->instance);
     free(window);
 }
