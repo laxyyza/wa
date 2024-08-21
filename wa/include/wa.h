@@ -2,7 +2,6 @@
 #define _WA_H_
 
 #include <stdbool.h>
-#include <stdlib.h>
 #include "wa_event.h"
 
 #define _WA_UNUSED __attribute__((unused))
@@ -53,5 +52,7 @@ int             wa_window_mainloop(wa_window_t* window);
 void            wa_window_set_fullscreen(wa_window_t* window, bool fullscreen);
 void            wa_window_stop(wa_window_t* window);
 void            wa_window_delete(wa_window_t* window);
+
+void            wa_print_opengl(void);
 
 #endif // _WA_H_

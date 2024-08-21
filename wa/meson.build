@@ -1,29 +1,59 @@
-wa_src = files(
+wa_src = [
     'src/wa_log.c',
-    'src/wa_wayland.c',
-    'src/wa_wayland_input.c'
-)
+    'src/wa.c'
+]
 
-wa_include = include_directories('include/')
+message('Building WA for ', host_machine.system(), host_machine.cpu())
 
-# Find Wayland dependencies
-wayland_client = dependency('wayland-client', required: true)
-wayland_egl = dependency('wayland-egl', required: true)
-wayland_protocols = dependency('wayland-protocols', required: true)
-
-# Find OpenGL and EGL dependencies
-egl = dependency('egl', required: true)
+wa_deps = []
 gl = dependency('gl', required: true)
 glew = dependency('glew', required: true)
 
-# Find xkbcommon
-xkbcommon = dependency('xkbcommon', required: true)
+if meson.is_cross_build()
+    add_global_arguments(
+        '-Wno-error=cast-function-type',
+        language: 'c'
+    )
+    add_project_arguments(
+        '-D_WA_WIN32',
+        language: 'c'
+    )
+    wa_src += [
+        'src/wa_win32.c'
+    ]
+else
+    add_project_arguments(
+        '-D_WA_WAYLAND',
+        language: 'c'
+    )
+    wa_src += [
+        'src/wa_log.c',
+        'src/wa_wayland.c',
+        'src/wa_wayland_input.c'
+    ]
 
-wa_deps = [wayland_client, wayland_egl, egl, gl, glew, xkbcommon]
+    # Find Wayland dependencies
+    wayland_client = dependency('wayland-client', required: true)
+    wayland_egl = dependency('wayland-egl', required: true)
+    wayland_protocols = dependency('wayland-protocols', required: true)
 
-subdir('wayland-protocols/')
+    # Find OpenGL and EGL dependencies
+    egl = dependency('egl', required: true)
 
-wa_deps += client_protos
+    # Find xkbcommon
+    xkbcommon = dependency('xkbcommon', required: true)
+
+    wa_deps = [wayland_client, wayland_egl, egl, gl, glew, xkbcommon]
+
+    subdir('wayland-protocols/')
+
+    wa_deps += client_protos
+endif
+
+
+wa_include = include_directories('include/')
+wa_src = files(wa_src)
+
 
 public_headers = [
     'include/wa.h', 

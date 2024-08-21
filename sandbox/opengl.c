@@ -1,16 +1,11 @@
 #include "wa.h"
 #include "wa_event.h"
-#include "wa_log.h"
+#include "wa_keys.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/stat.h>
 #include <GL/glew.h>
-#include <xkbcommon/xkbcommon.h>
-#include <signal.h>
 
 typedef struct 
 {
@@ -32,7 +27,7 @@ typedef struct
     };
 } vec4_t;
 
-inline vec4_t 
+vec4_t 
 vec4(float x, float y, float z, float w)
 {
     vec4_t vec = {
@@ -73,11 +68,13 @@ uint8_t indices[] = {
 };
 
 size_t
-fsize(int fd)
+filesize(FILE* f)
 {
-    struct stat stat;
-    fstat(fd, &stat);
-    return stat.st_size;
+    size_t size;
+    fseek(f, 0, SEEK_END);
+    size = ftell(f);
+    fseek(f, 0, SEEK_SET);
+    return size;
 }
 
 static void
@@ -91,18 +88,11 @@ const char*
 readfile(const char* filepath)
 {
     char* buf;
-    size_t size;
-    int fd = open(filepath, O_RDONLY);
-    if (fd == -1)
-    {
-        perror("open");
-        return NULL;
-    }
-    size = fsize(fd);
-    buf = calloc(size + 1, sizeof(char));
-    if (read(fd, buf, size) == -1)
-        perror("read");
-    close(fd);
+    FILE* f = fopen(filepath, "r");
+    size_t size = filesize(f);
+    buf = malloc(size + 1);
+    fread(buf, 1, size, f);
+    fclose(f);
     return buf;
 }
 
@@ -195,18 +185,18 @@ app_event(wa_window_t* window, const wa_event_t* ev, void* data)
     {
         if (ev->keyboard.pressed)
         {
-            if (ev->keyboard.sym == XKB_KEY_f)
+            if (ev->keyboard.sym == WA_KEY_F)
             {
                 wa_state_t* state = wa_window_get_state(window);
                 wa_window_set_fullscreen(window, !(state->window.state & WA_STATE_FULLSCREEN));
             }
-            else if (ev->keyboard.sym == XKB_KEY_r)
+            else if (ev->keyboard.sym == WA_KEY_F)
             {
                 app->color.r = 0.0;
                 app->color.b = 0.0;
             }
         }
-        else if (ev->keyboard.sym == XKB_KEY_r)
+        else if (ev->keyboard.sym == WA_KEY_R)
         {
             app->color = app->og_color;
         }
@@ -225,11 +215,11 @@ app_close(_WA_UNUSED wa_window_t* window, _WA_UNUSED void* user_data)
 
 }
 
-static void
-sighandle(_WA_UNUSED int signum)
-{
-    wa_window_stop(app_ptr->window);
-}
+// static void
+// sighandle(_WA_UNUSED int signum)
+// {
+//     wa_window_stop(app_ptr->window);
+// }
 
 // Define the debug callback
 void opengl_debug_callback(GLenum source, GLenum type, GLuint id,
@@ -283,7 +273,7 @@ int main(void)
     app.color = vec4(0.7, 0.0, 0.7, 1.0);
     app.og_color = app.color;
 
-    signal(SIGINT, sighandle);
+    // signal(SIGINT, sighandle);
 
     if ((app.window = wa_window_create_from_state(state)) == NULL)
         return -1;
@@ -293,6 +283,8 @@ int main(void)
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 
     glDebugMessageCallback(opengl_debug_callback, &app);
+
+    wa_print_opengl();
 
     // GLuint VBO, VAO;
     // glGenVertexArrays(1, &VAO);

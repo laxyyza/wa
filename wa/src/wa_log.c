@@ -6,6 +6,7 @@
 #define WA_LOG_LEN 4096
 
 /* Terminal colors */
+#ifdef _WA_WAYLAND
 #define FG_RED "\033[91m"
 #define BG_RED "\033[101m"
 #define FG_GREEN "\033[92m"
@@ -16,6 +17,21 @@
 
 #define C_DEFAULT FG_DEFAULT BG_DEFAULT
 #define C_FATAL BG_RED FG_BLACK
+
+#elif _WA_WIN32
+
+#define FG_RED ""
+#define BG_RED ""
+#define FG_GREEN "" 
+#define FG_ORANGE ""
+#define FG_DEFAULT ""
+#define BG_DEFAULT ""
+#define FG_BLACK ""
+
+#define C_DEFAULT ""
+#define C_FATAL ""
+
+#endif // _WA_WIN32
 
 static const char* wa_log_str[WA_LOG_LEVEL_LEN] = {
     "WA [" FG_RED "FATAL" FG_DEFAULT "]",
