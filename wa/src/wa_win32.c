@@ -66,6 +66,13 @@ wa_resize(wa_window_t* window, int w, int h)
     window->state.window.h = h;
 
     glViewport(0, 0, w, h);
+
+    wa_event_t ev = {
+        .type = WA_EVENT_RESIZE,
+        .resize.w = w,
+        .resize.h = h
+    };
+    window->state.callbacks.event(window, &ev, window->state.user_data);
 }
 
 LRESULT CALLBACK 
