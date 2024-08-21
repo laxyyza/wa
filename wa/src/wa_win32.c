@@ -376,3 +376,10 @@ wa_window_delete(wa_window_t* window)
     UnregisterClass(window->class_name, window->instance);
     free(window);
 }
+
+void
+wa_window_vsync(wa_window_t* window, bool vsync)
+{
+    ((BOOL(WINAPI*)(int))wglGetProcAddress("wglSwapIntervalEXT"))(vsync);
+    window->state.window.vsync = vsync;
+}
