@@ -2,6 +2,7 @@
 
 #include <string.h>
 #include "wa_log.h"
+#include <errno.h>
 
 #define WA_DEFAULT_APP_ID "wa"
 #define WA_DEFAULT_TITLE "WA - Window Abstraction"
@@ -227,7 +228,7 @@ wa_toplevel_close(void* data, _WA_UNUSED struct xdg_toplevel* toplevel)
 
     window->running = false;
 
-    wa_log(WA_VBOSE, "XDG Toplevel close\n");
+    wa_log(WA_DEBUG, "XDG Toplevel close\n");
 }
 
 static void 
@@ -411,6 +412,11 @@ wa_window_init_wayland(wa_window_t* window)
 
     wl_surface_commit(window->wl_surface);
     wl_display_roundtrip(window->wl_display);
+
+    window->display_fd = wl_display_get_fd(window->wl_display);
+    window->pollfd.fd = window->display_fd;
+    window->pollfd.events = POLLIN;
+
     return true;
 }
 
@@ -559,7 +565,9 @@ wa_window_create_from_state(wa_state_t* state)
     window->xkb_context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
 
     wl_display_dispatch(window->wl_display);
-    
+
+    wa_draw(window);
+
     window->running = true;
     wa_log(WA_INFO, "Window \"%s\" %dx%d created\n", window->state.window.title, window->state.window.w, window->state.window.h);
 
@@ -605,6 +613,48 @@ wa_window_get_state(wa_window_t* window)
     return &window->state;
 }
 
+bool
+wa_window_running(const wa_window_t* window)
+{
+    return window->running;
+}
+
+static void 
+wa_wayland_poll(wa_window_t* window, int32_t timeout)
+{
+    int32_t ret = poll(&window->pollfd, 1, timeout);
+    if (ret > 0)
+    {
+        wl_display_read_events(window->wl_display);
+        wl_display_dispatch_pending(window->wl_display);
+    }
+    else if (ret == 0)
+    {
+        wl_display_cancel_read(window->wl_display);
+    }
+    else
+    {
+        wa_log(WA_ERROR, "poll: %s\n", 
+               strerror(errno));
+        window->running = false;
+    }
+}
+
+void
+wa_window_poll_timeout(wa_window_t* window, int32_t timeout)
+{
+    if (wl_display_prepare_read(window->wl_display) == 0)
+        wa_wayland_poll(window, timeout);
+    else
+        wl_display_dispatch_pending(window->wl_display);
+}
+
+void
+wa_window_poll(wa_window_t* window)
+{
+    wa_window_poll_timeout(window, window->poll_timeout);
+}
+
 int 
 wa_window_mainloop(wa_window_t* window)
 {
@@ -620,16 +670,9 @@ wa_window_mainloop(wa_window_t* window)
         return -1;
     }
 
-    wa_draw(window);
-
     while (window->running)
     {
-        if (wl_display_dispatch(window->wl_display) == -1)
-        {
-            int ret = wl_display_get_error(window->wl_display);
-            wa_logf(WA_FATAL, "wl_display_dispatch() failed: %d\n", ret);
-            return ret;
-        }
+        wa_window_poll(window);
 
         window->state.callbacks.update(window, window->state.user_data);
         if (window->state.window.vsync == false)
@@ -752,13 +795,16 @@ wa_wayland_tear(wa_window_t* window, bool tear)
     {
         hint = WP_TEARING_CONTROL_V1_PRESENTATION_HINT_VSYNC;
 
-        // Use the frame callback again.
-        window->frame_done_callback = wl_surface_frame(window->wl_surface);
-        wl_callback_add_listener(window->frame_done_callback, 
-                                 &window->wl_frame_done_listener, 
-                                 window);
-        
-        wa_draw(window);
+        if (window->state.window.vsync == false)
+        {
+            // Use the frame callback again.
+            window->frame_done_callback = wl_surface_frame(window->wl_surface);
+            wl_callback_add_listener(window->frame_done_callback, 
+                                     &window->wl_frame_done_listener, 
+                                     window);
+            
+            wa_draw(window);
+        }
     }
 
     wp_tearing_control_v1_set_presentation_hint(window->tearing, hint);
@@ -770,6 +816,7 @@ wa_window_vsync(wa_window_t* window, bool vsync)
     eglSwapInterval(window->egl_display, vsync);
     wa_wayland_tear(window, !vsync);
     window->state.window.vsync = vsync;
+    window->poll_timeout = (vsync) ? -1 : 0;
 
     wa_log(WA_DEBUG, "Set VSync: %d\n", vsync);
 }

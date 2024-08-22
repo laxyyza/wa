@@ -15,9 +15,14 @@
 #include <GL/gl.h>
 #include <EGL/egl.h>
 #include <xkbcommon/xkbcommon.h>
+#include <poll.h>
 
 typedef struct wa_window
 {
+    int display_fd;
+    int poll_timeout;
+    struct pollfd pollfd;
+
     struct wl_display*      wl_display;
     struct wl_registry*     wl_registry;
     struct wl_compositor*   wl_compositor;
