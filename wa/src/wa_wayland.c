@@ -727,6 +727,10 @@ wa_window_xkb_cleanup(wa_window_t* window)
 static void 
 wa_window_wayland_cleanup(wa_window_t* window)
 {
+    if (window->tearing)
+        wp_tearing_control_v1_destroy(window->tearing);
+    if (window->tearing_manager)
+        wp_tearing_control_manager_v1_destroy(window->tearing_manager);
     if (window->xdg_toplevel_decoration)
         zxdg_toplevel_decoration_v1_destroy(window->xdg_toplevel_decoration);
     if (window->xdg_decoration_manager)
@@ -747,6 +751,8 @@ wa_window_wayland_cleanup(wa_window_t* window)
         wl_keyboard_destroy(window->wl_keyboard);
     if (window->wl_pointer)
         wl_pointer_destroy(window->wl_pointer);
+    if (window->wl_seat)
+        wl_seat_destroy(window->wl_seat);
     if (window->wl_egl_window)
         wl_egl_window_destroy(window->wl_egl_window);
     for (size_t i = 0; i < window->n_outputs; i++)
