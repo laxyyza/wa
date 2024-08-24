@@ -3,6 +3,7 @@
 
 #include "wa.h"
 #include "wa_log.h"
+#include <GL/gl.h>
 #include <GL/wglext.h>
 #include <windows.h>
 

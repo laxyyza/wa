@@ -7,8 +7,6 @@
 static void
 wa_default_draw(_WA_UNUSED wa_window_t* window, _WA_UNUSED void* data)
 {
-    glClearColor(0.5, 0.0, 0.5, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT);
 }
 
 static void

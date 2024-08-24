@@ -1,6 +1,5 @@
 wa_src = [
     'src/wa_log.c',
-    'src/wa.c'
 ]
 
 message('Building WA for ', host_machine.system(), host_machine.cpu())
@@ -19,6 +18,8 @@ if meson.is_cross_build()
     wa_src += [
         'src/wa_win32.c'
     ]
+    gl = dependency('gl', required: true)
+    wa_deps += gl
 else
     add_project_arguments(
         '-D_WA_WAYLAND',
