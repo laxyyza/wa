@@ -6,10 +6,6 @@ wa_src = [
 message('Building WA for ', host_machine.system(), host_machine.cpu())
 
 wa_deps = []
-gl = dependency('gl', required: true)
-glew = dependency('glew', required: true)
-
-message('glew,', glew.name())
 
 if meson.is_cross_build()
     add_global_arguments(
@@ -45,7 +41,7 @@ else
     # Find xkbcommon
     xkbcommon = dependency('xkbcommon', required: true)
 
-    wa_deps = [wayland_client, wayland_egl, egl, gl, glew, xkbcommon]
+    wa_deps = [wayland_client, wayland_egl, egl, xkbcommon]
 
     subdir('wayland-protocols/')
 

@@ -25,8 +25,6 @@ wa_default_update(_WA_UNUSED wa_window_t* window, _WA_UNUSED void* data)
 static void 
 wa_default_draw(_WA_UNUSED wa_window_t* window, _WA_UNUSED void* data)
 {
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
 }
 
 static void 
@@ -54,7 +52,6 @@ wa_window_resize(wa_window_t* window)
         return;
 
     wl_egl_window_resize(window->wl_egl_window, w, h, 0, 0);
-    glViewport(0, 0, w, h);
     wa_log(WA_VBOSE, "Window resized: %dx%d\n", w, h);
 }
 
@@ -507,12 +504,6 @@ wa_window_init_egl(wa_window_t* window)
         return false;
     }
 
-    if (glewInit() != GLEW_OK)
-    {
-        wa_logf(WA_ERROR, "GLEW init failed: %s\n", glewGetErrorString(glGetError()));
-        return false;
-    }
-
     return true;
 }
 
@@ -713,11 +704,11 @@ wa_window_egl_cleanup(wa_window_t* window)
 {
     if (window->egl_display)
     {
+        eglMakeCurrent(window->egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
         if (window->egl_surface)
             eglDestroySurface(window->egl_display, window->egl_surface);
         if (window->egl_context)
             eglDestroyContext(window->egl_display, window->egl_context);
-        eglMakeCurrent(window->egl_display, 0, 0, 0);
         eglTerminate(window->egl_display);
     }
 }

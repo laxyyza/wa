@@ -11,8 +11,6 @@
 #include <unistd.h>
 #include <wayland-client.h>
 #include <wayland-egl.h>
-#include <GL/glew.h>
-#include <GL/gl.h>
 #include <EGL/egl.h>
 #include <xkbcommon/xkbcommon.h>
 #include <poll.h>
