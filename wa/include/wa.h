@@ -1,7 +1,6 @@
 #ifndef _WA_H_
 #define _WA_H_
 
-#include <stdbool.h>
 #include "wa_event.h"
 
 #define _WA_UNUSED __attribute__((unused))
@@ -56,7 +55,5 @@ void            wa_window_vsync(wa_window_t* window, bool vsync);
 
 void            wa_window_poll_timeout(wa_window_t* window, int32_t timeout);
 void            wa_window_poll(wa_window_t* window);
-
-void            wa_print_opengl(void);
 
 #endif // _WA_H_
