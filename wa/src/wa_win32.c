@@ -65,8 +65,6 @@ wa_resize(wa_window_t* window, int w, int h)
     window->state.window.w = w;
     window->state.window.h = h;
 
-    glViewport(0, 0, w, h);
-
     wa_event_t ev = {
         .type = WA_EVENT_RESIZE,
         .resize.w = w,
@@ -252,12 +250,6 @@ wa_window_create_from_state(wa_state_t* state)
     }
     else
         wa_log(WA_ERROR, "NUULL?\n");
-
-    GLenum glewInitResult = glewInit();
-    if (glewInitResult != GLEW_OK) {
-        fprintf(stderr, "Error initializing GLEW: %s\n", glewGetErrorString(glewInitResult));
-        exit(EXIT_FAILURE);
-    }
 
     window->running = true;
 
