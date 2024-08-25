@@ -2,6 +2,7 @@
 #include "wa_wayland.h"
 #include "wa_log.h"
 #include "xdg-shell.h"
+#include "wa_xkbcommon.h"
 
 void 
 wa_kb_map(void* data, _WA_UNUSED struct wl_keyboard* keyboard, uint32_t frmt, int fd, uint32_t size)
@@ -69,19 +70,18 @@ wa_kb_key(void* data, _WA_UNUSED struct wl_keyboard* keyboard, _WA_UNUSED uint32
 {
     wa_window_t* window = data;
 
-    uint32_t keycode = key + 8;
-
+    xkb_keycode_t keycode = key + 8;
     xkb_keysym_t sym = xkb_state_key_get_one_sym(window->xkb_state, keycode);
+    uint8_t pressed = state & WL_KEYBOARD_KEY_STATE_PRESSED;
+    wa_key_t wa_key = wa_xkb_to_wa_key(sym);
+
+    window->state.key_map[wa_key] = pressed;
+
     wa_event_t key_event = {
         .type = WA_EVENT_KEYBOARD,
         .keyboard.pressed = state,
-        .keyboard.sym = sym
+        .keyboard.key = wa_key
     };
-
-    xkb_keysym_get_name(sym, key_event.keyboard.name, WA_KEY_NAME_LEN);
-
-    wa_log(WA_VBOSE, "Key pressed (%d): Sym: %u, name: '%s'\n",
-           state, sym, key_event.keyboard.name);
 
     window->state.callbacks.event(window, &key_event, window->state.user_data);
 }

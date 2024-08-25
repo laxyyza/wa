@@ -28,7 +28,8 @@ else
     wa_src += [
         'src/wa_log.c',
         'src/wa_wayland.c',
-        'src/wa_wayland_input.c'
+        'src/wa_wayland_input.c',
+        'src/wa_xkbcommon.c',
     ]
 
     # Find Wayland dependencies
