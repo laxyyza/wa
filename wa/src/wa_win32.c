@@ -190,6 +190,15 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
         case WM_PAINT:
             wa_draw(window);
             return 0;
+        case WM_MOUSEWHEEL:
+        {
+            wa_event_t ev = {
+                .type = WA_EVENT_MOUSE_WHEEL,
+                .wheel.value = GET_WHEEL_DELTA_WPARAM(wparam),
+            };
+            window->state.callbacks.event(window, &ev, window->state.user_data);
+            return 0;
+        }
     }
     return DefWindowProc(hwnd, msg, wparam, lparam);
 }
