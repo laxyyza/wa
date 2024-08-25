@@ -139,6 +139,18 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
                                           window->state.user_data);
             return 0;
         }
+        case WM_MOUSEMOVE:
+        {
+            wa_event_t ev = {
+                .type = WA_EVENT_POINTER,
+                .pointer.x = LOWORD(lparam),
+                .pointer.y = HIWORD(lparam),
+            };
+            window->state.callbacks.event(window,
+                                          &ev,
+                                          window->state.user_data);
+            return 0;
+        }
         case WM_PAINT:
             wa_draw(window);
             return 0;
