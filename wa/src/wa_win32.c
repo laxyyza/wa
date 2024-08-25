@@ -88,6 +88,49 @@ wa_win32_keyevent(wa_window_t* window, UINT type, WPARAM wparam)
     window->state.callbacks.event(window, &ev, window->state.user_data);
 }
 
+static void
+wa_win32_button_event(wa_window_t* window, UINT msg)
+{
+    wa_mouse_butt_t button;
+    bool pressed = false;
+
+    switch (msg)
+    {
+        case WM_LBUTTONDOWN:
+            pressed = true;
+            button = WA_MOUSE_LEFT;
+            break;
+        case WM_LBUTTONUP:
+            button = WA_MOUSE_LEFT;
+            break;
+        case WM_RBUTTONDOWN:
+            pressed = true;
+            button = WA_MOUSE_RIGHT;
+            break;
+        case WM_RBUTTONUP:
+            button = WA_MOUSE_RIGHT;
+            break;
+        case WM_MBUTTONDOWN:
+            pressed = true;
+            button = WA_MOUSE_MIDDLE;
+            break;
+        case WM_MBUTTONUP:
+            button = WA_MOUSE_MIDDLE;
+            break;
+        default:
+            button = WA_MOUSE_UNKOWN;
+    }
+
+    window->state.mouse_map[button] = pressed;
+
+    wa_event_t ev = {
+        .type = WA_EVENT_MOUSE_BUTTON,
+        .mouse.button = button,
+        .mouse.pressed = pressed
+    };
+    window->state.callbacks.event(window, &ev, window->state.user_data);
+}
+
 LRESULT CALLBACK 
 window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -136,6 +179,14 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
                                           window->state.user_data);
             return 0;
         }
+        case WM_LBUTTONDOWN:
+        case WM_LBUTTONUP:
+        case WM_RBUTTONDOWN:
+        case WM_RBUTTONUP:
+        case WM_MBUTTONDOWN:
+        case WM_MBUTTONUP:
+            wa_win32_button_event(window, msg);
+            return 0;
         case WM_PAINT:
             wa_draw(window);
             return 0;
