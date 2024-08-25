@@ -210,10 +210,19 @@ wa_point_axis_discrete(_WA_UNUSED void* data, _WA_UNUSED struct wl_pointer* poin
 }
 
 void 
-wa_point_axis120(_WA_UNUSED void* data, _WA_UNUSED struct wl_pointer* pointer, 
+wa_point_axis120(void* data, _WA_UNUSED struct wl_pointer* pointer, 
                  uint32_t axis_type, int value)
 {
+    wa_window_t* window = data;
+
     wa_log(WA_VBOSE, "WA: point_axis120() type: %u, value: %d\n", axis_type, value);
+
+    wa_event_t ev = {
+        .type = WA_EVENT_MOUSE_WHEEL,
+        .wheel.value = value,
+        .wheel.axis = axis_type
+    };
+    window->state.callbacks.event(window, &ev, window->state.user_data);
 }
 
 void 
