@@ -293,24 +293,37 @@ wa_window_get_state(wa_window_t* window)
     return &window->state;
 }
 
+void
+wa_window_poll_timeout(wa_window_t *window, _WA_UNUSED int32_t timeout)
+{
+    MSG msg;
+    while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+    {
+        if (msg.message == WM_QUIT)
+        {
+            wa_log(WA_DEBUG, "WM_QUIT\n");
+            window->running = false;
+            break;
+        }
+
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
+}
+
+void 
+wa_window_poll(wa_window_t* window)
+{
+    wa_window_poll_timeout(window, 0);
+}
+
 int     
 wa_window_mainloop(wa_window_t* window)
 {
-    MSG msg;
     while (window->running)
     {
-        while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-        {
-            if (msg.message == WM_QUIT)
-            {
-                wa_log(WA_DEBUG, "WM_QUIT\n");
-                window->running = false;
-                break;
-            }
+        wa_window_poll(window);
 
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
-        }
         window->state.callbacks.update(window, window->state.user_data);
         // wa_draw(window);
     }
