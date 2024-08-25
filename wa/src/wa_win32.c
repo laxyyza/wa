@@ -149,7 +149,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
         {
             int w = LOWORD(lparam);
             int h = HIWORD(lparam);
-            wa_log(WA_INFO, "WM_SIZE: %d/%d\n", w, h);
+            wa_log(WA_VBOSE, "WM_SIZE: %d/%d\n", w, h);
             wa_resize(window, w, h);
             return 0;
         }
