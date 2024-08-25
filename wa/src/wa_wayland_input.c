@@ -3,6 +3,7 @@
 #include "wa_log.h"
 #include "xdg-shell.h"
 #include "wa_xkbcommon.h"
+#include <linux/input-event-codes.h>
 
 void 
 wa_kb_map(void* data, _WA_UNUSED struct wl_keyboard* keyboard, uint32_t frmt, int fd, uint32_t size)
@@ -137,12 +138,42 @@ wa_point_move(void* data, _WA_UNUSED struct wl_pointer* pointer, _WA_UNUSED uint
     window->state.callbacks.event(window, &event, window->state.user_data);
 }
 
+static wa_mouse_butt_t
+wa_mouse_button(uint32_t button)
+{
+    switch (button)
+    {
+        case BTN_LEFT:
+            return WA_MOUSE_LEFT;
+        case BTN_RIGHT:
+            return WA_MOUSE_RIGHT;
+        case BTN_MIDDLE:
+            return WA_MOUSE_MIDDLE;
+        default:
+            return WA_MOUSE_UNKOWN;
+    }
+}
+
 void 
-wa_point_button(_WA_UNUSED void* data, _WA_UNUSED struct wl_pointer* pointer, 
+wa_point_button(void* data, _WA_UNUSED struct wl_pointer* pointer, 
                 uint32_t serial, uint32_t time, uint32_t button, uint32_t state)
 {
+    wa_window_t* window = data;
+
     wa_log(WA_VBOSE, "WA: point_button(serial: %u, time: %u) button: %u, state: %u\n", 
            serial, time, button, state);
+
+    bool pressed = state == 1;
+    wa_mouse_butt_t mbut = wa_mouse_button(button);
+
+    window->state.mouse_map[mbut] = pressed;
+
+    wa_event_t ev = {
+        .type = WA_EVENT_MOUSE_BUTTON,
+        .mouse.button = mbut,
+        .mouse.pressed = pressed
+    };
+    window->state.callbacks.event(window, &ev, window->state.user_data);
 }
 
 void 
