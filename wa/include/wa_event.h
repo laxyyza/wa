@@ -11,7 +11,8 @@ enum wa_event_type
 {
     WA_EVENT_KEYBOARD,
     WA_EVENT_POINTER,
-    WA_EVENT_RESIZE
+    WA_EVENT_RESIZE,
+    WA_EVENT_MOUSE_BUTTON
 };
 
 typedef struct  
@@ -32,6 +33,10 @@ typedef struct
             int old_w;
             int old_h;
         } resize;
+        struct {
+            wa_mouse_butt_t button;
+            bool pressed;
+        } mouse;
     };
 } wa_event_t;
 

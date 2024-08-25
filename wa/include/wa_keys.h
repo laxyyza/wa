@@ -61,4 +61,14 @@ typedef enum wa_key
     WA_KEY_LEN
 } wa_key_t;
 
+typedef enum wa_mouse_button
+{
+    WA_MOUSE_UNKOWN = 0,
+    WA_MOUSE_LEFT,
+    WA_MOUSE_RIGHT,
+    WA_MOUSE_MIDDLE,
+
+    WA_MOUSE_LEN
+} wa_mouse_butt_t;
+
 #endif

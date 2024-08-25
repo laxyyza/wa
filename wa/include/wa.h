@@ -42,6 +42,7 @@ typedef struct
     wa_callbacks_t      callbacks;
     void*               user_data;
     uint8_t             key_map[WA_KEY_LEN];
+    uint8_t             mouse_map[WA_MOUSE_LEN];
 } wa_state_t;
 
 wa_window_t*    wa_window_create(const char* title, int w, int h, bool fullscrenn);
