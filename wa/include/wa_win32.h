@@ -20,7 +20,6 @@ typedef struct wa_window
     const char* class_name;
 
     wa_state_t state;
-    uint8_t key_states[KEY_COUNT];
 
     bool running;
 } wa_window_t;

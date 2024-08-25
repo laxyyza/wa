@@ -16,7 +16,8 @@ if meson.is_cross_build()
         language: 'c'
     )
     wa_src += [
-        'src/wa_win32.c'
+        'src/wa_win32.c',
+        'src/wa_win32_keymap.c',
     ]
     gl = dependency('gl', required: true)
     wa_deps += gl

@@ -3,6 +3,7 @@
 #include "wa_event.h"
 #include <stdio.h>
 #include <windows.h>
+#include "wa_win32_keymap.h"
 
 static void
 wa_default_draw(_WA_UNUSED wa_window_t* window, _WA_UNUSED void* data)
@@ -71,6 +72,22 @@ wa_resize(wa_window_t* window, int w, int h)
     window->state.callbacks.event(window, &ev, window->state.user_data);
 }
 
+static void
+wa_win32_keyevent(wa_window_t* window, UINT type, WPARAM wparam)
+{
+    bool pressed = (type == WM_KEYDOWN);
+    wa_key_t key = wa_win32_key_to_wa_key(wparam);
+
+    window->state.key_map[key] = pressed;
+
+    wa_event_t ev = {
+        .type = WA_EVENT_KEYBOARD,
+        .keyboard.key = key,
+        .keyboard.pressed = pressed
+    };
+    window->state.callbacks.event(window, &ev, window->state.user_data);
+}
+
 LRESULT CALLBACK 
 window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -104,41 +121,9 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
             return 0;
         }
         case WM_KEYDOWN:
-        {
-            if (wparam < KEY_COUNT)
-            {
-                window->key_states[wparam] = 1;
-            }
-            wa_log(WA_DEBUG, "KEY DOWN: %c\n", (char)wparam);
-
-            wa_event_t ev = {
-                .type = WA_EVENT_KEYBOARD,
-                .keyboard.pressed = 1,
-                .keyboard.sym = wparam
-            };
-            window->state.callbacks.event(window,
-                                          &ev,
-                                          window->state.user_data);
-
-            return 0;
-        }
         case WM_KEYUP:
-        {
-            if (wparam < KEY_COUNT)
-            {
-                window->key_states[wparam] = 0;
-            }
-            wa_log(WA_DEBUG, "KEY UP: %c\n", (char)wparam);
-            wa_event_t ev = {
-                .type = WA_EVENT_KEYBOARD,
-                .keyboard.pressed = 0,
-                .keyboard.sym = wparam
-            };
-            window->state.callbacks.event(window,
-                                          &ev,
-                                          window->state.user_data);
+            wa_win32_keyevent(window, msg, wparam);
             return 0;
-        }
         case WM_MOUSEMOVE:
         {
             wa_event_t ev = {
