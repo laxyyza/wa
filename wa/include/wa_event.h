@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "wa_keys.h"
 
 #define WA_KEY_NAME_LEN 32
 
@@ -18,8 +19,7 @@ typedef struct
     enum wa_event_type type;
     union {
         struct {
-            uint32_t sym;
-            char name[WA_KEY_NAME_LEN];
+            wa_key_t key;
             bool pressed;
         } keyboard;
         struct {

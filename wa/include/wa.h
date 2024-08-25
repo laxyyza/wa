@@ -2,6 +2,7 @@
 #define _WA_H_
 
 #include "wa_event.h"
+#include "wa_keys.h"
 
 #define _WA_UNUSED __attribute__((unused))
 
@@ -40,6 +41,7 @@ typedef struct
     wa_window_state_t   window;
     wa_callbacks_t      callbacks;
     void*               user_data;
+    uint8_t             key_map[WA_KEY_LEN];
 } wa_state_t;
 
 wa_window_t*    wa_window_create(const char* title, int w, int h, bool fullscrenn);
