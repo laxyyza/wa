@@ -12,6 +12,7 @@
 typedef struct wa_window
 {
     HWND hwnd;
+    WNDCLASS wc;
     HINSTANCE instance;
     RECT rect;
     HDC hdc;

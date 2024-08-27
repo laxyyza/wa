@@ -169,6 +169,15 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
             window->state.callbacks.event(window, &ev, window->state.user_data);
             return 0;
         }
+        case WM_SETCURSOR:
+        {
+            if (LOWORD(lparam) == HTCLIENT) 
+            {
+                SetCursor(window->wc.hCursor); 
+                return TRUE;
+            }
+            return 0;
+        }
     }
     return DefWindowProc(hwnd, msg, wparam, lparam);
 }
@@ -189,14 +198,14 @@ wa_window_create_from_state(wa_state_t* state)
     window->instance = GetModuleHandle(NULL);
     window->class_name = "class name?";
 
-    WNDCLASS wc = {0};
-    wc.lpfnWndProc = window_proc;
-    wc.hInstance = window->instance;
-    wc.lpszClassName = window->class_name;
-    wc.hIcon = LoadIcon(NULL, IDI_WINLOGO);
-    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+    WNDCLASS* wc = &window->wc;
+    wc->lpfnWndProc = window_proc;
+    wc->hInstance = window->instance;
+    wc->lpszClassName = window->class_name;
+    wc->hIcon = LoadIcon(NULL, IDI_WINLOGO);
+    wc->hCursor = LoadCursor(NULL, IDC_ARROW);
 
-    RegisterClass(&wc);
+    RegisterClass(wc);
 
     DWORD style = WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU;
     RECT* rect = &window->rect;

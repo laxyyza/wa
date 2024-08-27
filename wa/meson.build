@@ -19,6 +19,7 @@ if meson.is_cross_build()
     wa_src += [
         'src/wa_win32.c',
         'src/wa_win32_keymap.c',
+        'src/wa_win32_cursor.c',
     ]
     gl = dependency('gl', required: true)
     wa_deps += gl
