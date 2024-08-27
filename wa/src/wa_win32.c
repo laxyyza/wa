@@ -276,6 +276,8 @@ wa_window_create_from_state(wa_state_t* state)
     else
         wa_log(WA_ERROR, "NUULL?\n");
 
+    wa_window_vsync(window, window->state.window.vsync);
+
     window->running = true;
 
     return window;
@@ -291,13 +293,12 @@ void
 wa_window_poll_timeout(wa_window_t *window, _WA_UNUSED int32_t timeout)
 {
     MSG msg;
-    while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+    if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
     {
         if (msg.message == WM_QUIT)
         {
             wa_log(WA_DEBUG, "WM_QUIT\n");
             window->running = false;
-            break;
         }
 
         TranslateMessage(&msg);
