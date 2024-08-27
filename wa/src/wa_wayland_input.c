@@ -1,5 +1,6 @@
 #include "wa_event.h"
 #include "wa_wayland.h"
+#include "wa_cursor.h"
 #include "wa_log.h"
 #include "xdg-shell.h"
 #include "wa_xkbcommon.h"
@@ -106,10 +107,17 @@ wa_kb_rep(_WA_UNUSED void* data, _WA_UNUSED struct wl_keyboard* keyboard, int32_
 }
 
 void 
-wa_point_enter(_WA_UNUSED void* data, _WA_UNUSED struct wl_pointer* pointer, _WA_UNUSED uint32_t serial, 
+wa_point_enter(void* data, struct wl_pointer* pointer, uint32_t serial, 
                _WA_UNUSED struct wl_surface* surface, wl_fixed_t surface_x, wl_fixed_t surface_y)
 {
+    wa_window_t* window = data;
     wa_log(WA_VBOSE, "WA: point_enter(surxy: %dx%d)\n", surface_x, surface_y);
+
+    window->pointer_serial = serial;
+    if (window->cursor_shape_device)
+        wp_cursor_shape_device_v1_destroy(window->cursor_shape_device);
+    window->cursor_shape_device = wp_cursor_shape_manager_v1_get_pointer(window->cursor_shape_manager, pointer);
+    wa_set_cursor_shape(window, window->wa_cursor_shape);
 }
 
 void 

@@ -2,9 +2,11 @@
 #define _WA_WAYLAND_H_
 
 #include "wa.h"
+#include "wa_cursor.h"
 #include "xdg-shell.h"
 #include "xdg-decoration-unstable-v1.h"
 #include "tearing-control-v1.h"
+#include "cursor-shape-v1.h"
 
 #include <stdlib.h>
 #include <sys/mman.h>
@@ -39,6 +41,12 @@ typedef struct wa_window
     struct xdg_surface*     xdg_surface;
     struct zxdg_decoration_manager_v1* xdg_decoration_manager;
     struct zxdg_toplevel_decoration_v1* xdg_toplevel_decoration;
+
+    struct wp_cursor_shape_manager_v1* cursor_shape_manager;
+    struct wp_cursor_shape_device_v1* cursor_shape_device;
+    enum wp_cursor_shape_device_v1_shape cursor_shape;
+    enum wa_cursor_shape wa_cursor_shape;
+    uint32_t pointer_serial;
 
     struct wp_tearing_control_manager_v1* tearing_manager;
     struct wp_tearing_control_v1* tearing;

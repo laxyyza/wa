@@ -1,4 +1,5 @@
 #include "wa_wayland.h"
+#include "wa_cursor.h"
 
 #include <string.h>
 #include "wa_log.h"
@@ -84,6 +85,10 @@ wa_reg_glob(void* data, struct wl_registry* reg, uint32_t name, const char* inte
     else if (WA_CMP(wp_tearing_control_manager_v1_interface.name))
     {
         window->tearing_manager = wl_registry_bind(reg, name, &wp_tearing_control_manager_v1_interface, version);
+    }
+    else if (WA_CMP(wp_cursor_shape_manager_v1_interface.name))
+    {
+        window->cursor_shape_manager = wl_registry_bind(reg, name, &wp_cursor_shape_manager_v1_interface, version);
     }
     else
     {
@@ -305,6 +310,8 @@ eglGetErrorString(EGLint error)
 static bool 
 wa_window_init_wayland(wa_window_t* window)
 {
+    window->cursor_shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_DEFAULT;
+
     if ((window->wl_display = wl_display_connect(NULL)) == NULL)
     {
         wa_logf(WA_FATAL, "Failed to connect to Wayland display!\n");
