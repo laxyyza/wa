@@ -33,6 +33,7 @@ typedef struct
 
     struct { /* Wayland specific */
         const char* app_id;
+        bool opaque;
     } wayland;
 
     struct {

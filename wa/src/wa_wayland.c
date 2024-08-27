@@ -7,6 +7,18 @@
 #define WA_EGL_ERROR eglGetErrorString(eglGetError())
 #define WA_CMP(x) !strcmp(interface, x)
 
+static void
+wa_set_surface_opaque(wa_window_t* window)
+{
+    if (window->state.window.wayland.opaque == false)
+        return;
+
+    wl_region_add(window->wl_region, 0, 0, 
+                  window->state.window.w, 
+                  window->state.window.h);
+    wl_surface_set_opaque_region(window->wl_surface, window->wl_region);
+}
+
 static void 
 wa_window_resize(wa_window_t* window)
 {
@@ -17,6 +29,7 @@ wa_window_resize(wa_window_t* window)
         return;
 
     wl_egl_window_resize(window->wl_egl_window, w, h, 0, 0);
+    wa_set_surface_opaque(window);
     wa_log(WA_VBOSE, "Window resized: %dx%d\n", w, h);
 }
 
@@ -322,6 +335,14 @@ wa_window_init_wayland(wa_window_t* window)
     }
     window->wl_frame_done_listener.done = wa_frame_done;
     wl_callback_add_listener(window->frame_done_callback, &window->wl_frame_done_listener, window);
+
+    /* wl_region */
+    if (window->state.window.wayland.opaque && (window->wl_region = wl_compositor_create_region(window->wl_compositor)) == NULL)
+    {
+        wa_logf(WA_FATAL, "Failed to create wl_region!!\n");
+        return false;
+    }
+    wa_set_surface_opaque(window);
 
     /* XDG Surface */
     if ((window->xdg_surface = xdg_wm_base_get_xdg_surface(window->xdg_shell, window->wl_surface)) == NULL)
@@ -698,6 +719,8 @@ wa_window_wayland_cleanup(wa_window_t* window)
         wl_seat_destroy(window->wl_seat);
     if (window->wl_egl_window)
         wl_egl_window_destroy(window->wl_egl_window);
+    if (window->wl_region)
+        wl_region_destroy(window->wl_region);
     for (size_t i = 0; i < window->n_outputs; i++)
         if (window->wl_outputs[i])
             wl_output_destroy(window->wl_outputs[i]);

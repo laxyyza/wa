@@ -70,8 +70,10 @@ wa_state_set_default(wa_state_t* state)
     state->window.w = 100;
     state->window.h = 100;
     state->window.title = WA_DEFAULT_TITLE;
-    state->window.wayland.app_id = WA_DEFAULT_APP_ID;
     state->window.vsync = true;
+
+    state->window.wayland.app_id = WA_DEFAULT_APP_ID;
+    state->window.wayland.opaque = true; // Set this to false to have transparent window (Wayland)
 
     state->window.egl.red_size = 8;
     state->window.egl.green_size = 8;

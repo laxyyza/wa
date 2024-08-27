@@ -30,6 +30,7 @@ typedef struct wa_window
     struct wl_pointer*      wl_pointer;
     struct wl_callback*     frame_done_callback;
     struct wl_egl_window*   wl_egl_window;
+    struct wl_region*       wl_region;
     struct wl_output**      wl_outputs;
     size_t                  n_outputs;
 
