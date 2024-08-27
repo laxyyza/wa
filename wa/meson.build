@@ -1,5 +1,6 @@
 wa_src = [
     'src/wa_log.c',
+    'src/wa.c',
 ]
 
 message('Building WA for ', host_machine.system(), host_machine.cpu())

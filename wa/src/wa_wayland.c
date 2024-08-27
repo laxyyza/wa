@@ -4,43 +4,8 @@
 #include "wa_log.h"
 #include <errno.h>
 
-#define WA_DEFAULT_APP_ID "wa"
-#define WA_DEFAULT_TITLE "WA - Window Abstraction"
-
 #define WA_EGL_ERROR eglGetErrorString(eglGetError())
 #define WA_CMP(x) !strcmp(interface, x)
-
-static void 
-wa_default_event(_WA_UNUSED wa_window_t* window, _WA_UNUSED const wa_event_t* event, _WA_UNUSED void* data)
-{
-
-}
-
-static void 
-wa_default_update(_WA_UNUSED wa_window_t* window, _WA_UNUSED void* data)
-{
-
-}
-
-static void 
-wa_default_draw(_WA_UNUSED wa_window_t* window, _WA_UNUSED void* data)
-{
-}
-
-static void 
-wa_default_close(_WA_UNUSED wa_window_t* window, _WA_UNUSED void* data)
-{
-}
-
-static void
-wa_default_focus(_WA_UNUSED wa_window_t* window, _WA_UNUSED void* data)
-{
-}
-
-static void
-wa_default_unfocus(_WA_UNUSED wa_window_t* window, _WA_UNUSED void* data)
-{
-}
 
 static void 
 wa_window_resize(wa_window_t* window)
@@ -379,10 +344,10 @@ wa_window_init_wayland(wa_window_t* window)
     window->xdg_toplevel_listener.wm_capabilities = wa_toplevel_wm_caps;
     xdg_toplevel_add_listener(window->xdg_toplevel, &window->xdg_toplevel_listener, window);
 
-    const char* title = (window->state.window.title) ? window->state.window.title : WA_DEFAULT_TITLE;
+    const char* title = window->state.window.title;
     xdg_toplevel_set_title(window->xdg_toplevel, title);
 
-    const char* app_id = (window->state.window.wayland.app_id) ? window->state.window.wayland.app_id : WA_DEFAULT_APP_ID;
+    const char* app_id = window->state.window.wayland.app_id;
     xdg_toplevel_set_app_id(window->xdg_toplevel, app_id);
 
     wa_window_set_fullscreen(window, window->state.window.state & WA_STATE_FULLSCREEN);
@@ -420,6 +385,8 @@ wa_window_init_wayland(wa_window_t* window)
 static bool 
 wa_window_init_egl(wa_window_t* window)
 {
+    const wa_window_state_t* wstate = &window->state.window;
+
     const EGLint context_attr[] = {
         EGL_CONTEXT_MAJOR_VERSION, 4,
         EGL_CONTEXT_MINOR_VERSION, 6,
@@ -430,11 +397,11 @@ wa_window_init_egl(wa_window_t* window)
         EGL_NONE
     };
     EGLint config_attr[] = {
-        EGL_RED_SIZE,       8,
-        EGL_GREEN_SIZE,     8,
-        EGL_BLUE_SIZE,      8,
-        EGL_ALPHA_SIZE,     8,
-        EGL_DEPTH_SIZE,     24,
+        EGL_RED_SIZE,       wstate->egl.red_size,
+        EGL_GREEN_SIZE,     wstate->egl.green_size,
+        EGL_BLUE_SIZE,      wstate->egl.red_size,
+        EGL_ALPHA_SIZE,     wstate->egl.alpha_size,
+        EGL_DEPTH_SIZE,     wstate->egl.depth_size,
         EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
         EGL_NONE
     };
@@ -563,30 +530,6 @@ wa_window_create_from_state(wa_state_t* state)
     wa_log(WA_INFO, "Window \"%s\" %dx%d created\n", window->state.window.title, window->state.window.w, window->state.window.h);
 
     return window;
-}
-
-void 
-wa_state_set_default(wa_state_t* state)
-{
-    if (!state)
-    {
-        wa_logf(WA_WARN, "state is NULL!\n");
-        return;
-    }
-
-    memset(state, 0, sizeof(wa_state_t));
-
-    state->callbacks.event = wa_default_event;
-    state->callbacks.update = wa_default_update;
-    state->callbacks.close = wa_default_close;
-    state->callbacks.draw = wa_default_draw;
-    state->callbacks.focus = wa_default_focus;
-    state->callbacks.unfocus = wa_default_unfocus;
-    state->window.w = 100;
-    state->window.h = 100;
-    state->window.title = WA_DEFAULT_TITLE;
-    state->window.wayland.app_id = WA_DEFAULT_APP_ID;
-    state->window.vsync = true;
 }
 
 void 

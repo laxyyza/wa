@@ -34,6 +34,14 @@ typedef struct
     struct { /* Wayland specific */
         const char* app_id;
     } wayland;
+
+    struct {
+        uint8_t red_size;
+        uint8_t green_size;
+        uint8_t blue_size;
+        uint8_t alpha_size;
+        uint8_t depth_size;
+    } egl;
 } wa_window_state_t;
 
 typedef struct 

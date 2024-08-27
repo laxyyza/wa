@@ -5,36 +5,6 @@
 #include <windows.h>
 #include "wa_win32_keymap.h"
 
-static void
-wa_default_draw(_WA_UNUSED wa_window_t* window, _WA_UNUSED void* data)
-{
-}
-
-static void
-wa_default_close(_WA_UNUSED wa_window_t* window, _WA_UNUSED void* data)
-{
-}
-
-static void
-wa_default_event(_WA_UNUSED wa_window_t* window, _WA_UNUSED const wa_event_t* ev, _WA_UNUSED void* data)
-{
-}
-
-static void
-wa_default_update(_WA_UNUSED wa_window_t* window, _WA_UNUSED void* data)
-{
-}
-
-static void
-wa_default_focus(_WA_UNUSED wa_window_t* window, _WA_UNUSED void* data)
-{
-}
-
-static void
-wa_default_unfocus(_WA_UNUSED wa_window_t* window, _WA_UNUSED void* data)
-{
-}
-
 wa_window_t*    
 wa_window_create(const char* title, int w, int h, bool fullscreen)
 {
@@ -309,27 +279,6 @@ wa_window_create_from_state(wa_state_t* state)
     window->running = true;
 
     return window;
-}
-
-void    
-wa_state_set_default(wa_state_t* state)
-{
-    if (!state)
-    {
-        wa_logf(WA_WARN, "state is NULL!\n");
-        return;
-    }
-
-    memset(state, 0, sizeof(wa_state_t));
-
-    state->callbacks.event = wa_default_event;
-    state->callbacks.update = wa_default_update;
-    state->callbacks.close = wa_default_close;
-    state->callbacks.draw = wa_default_draw;
-    state->callbacks.focus = wa_default_focus;
-    state->callbacks.unfocus = wa_default_unfocus;
-    state->window.w = 100;
-    state->window.h = 100;
 }
 
 wa_state_t*     
