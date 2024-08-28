@@ -8,7 +8,6 @@
 
 /* System Includes */
 #include <stdlib.h>
-#include <sys/mman.h>
 #include <unistd.h>
 #include <EGL/egl.h>
 #include <poll.h>

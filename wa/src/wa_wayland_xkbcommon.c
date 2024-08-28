@@ -1,4 +1,6 @@
-#include "wa_xkbcommon.h"
+#include "wa_wayland_xkbcommon.h"
+#include "wa_wayland.h"
+#include <sys/mman.h>
 
 wa_key_t
 wa_xkb_to_wa_key(xkb_keysym_t keysym)
@@ -138,4 +140,58 @@ wa_xkb_to_wa_key(xkb_keysym_t keysym)
     }
 }
 
+void 
+wa_xkb_map(wa_window_t* window, uint32_t size, int32_t fd)
+{
+    char* map_str = MAP_FAILED;
 
+    map_str = mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
+    if (map_str == MAP_FAILED)
+    {
+        close(fd);
+        return;
+    }
+
+    if (window->xkb_keymap)
+        xkb_keymap_unref(window->xkb_keymap);
+    if (window->xkb_state)
+        xkb_state_unref(window->xkb_state);
+
+    window->xkb_keymap = xkb_keymap_new_from_string(
+            window->xkb_context,
+            map_str,
+            XKB_KEYMAP_FORMAT_TEXT_V1,
+            0
+    );
+
+    munmap(map_str, size);
+    close(fd);
+
+    if (window->xkb_keymap == NULL)
+    {
+        fprintf(stderr, "WA ERROR: Failed to compile keymap.\n");
+        return;
+    }
+
+    window->xkb_state = xkb_state_new(window->xkb_keymap);
+    if (window->xkb_state == NULL)
+    {
+        fprintf(stderr, "WA ERROR: Failed to create XKB state.\n");
+        xkb_keymap_unref(window->xkb_keymap);
+        window->xkb_keymap = NULL;
+        return;
+    }
+}
+
+wa_key_t
+wa_xkb_key(wa_window_t* window, uint32_t key, uint32_t state)
+{
+    xkb_keycode_t keycode = key + 8;
+    xkb_keysym_t sym = xkb_state_key_get_one_sym(window->xkb_state, keycode);
+    uint8_t pressed = state & WL_KEYBOARD_KEY_STATE_PRESSED;
+    wa_key_t wa_key = wa_xkb_to_wa_key(sym);
+
+    window->state.key_map[wa_key] = pressed;
+
+    return wa_key;
+}
