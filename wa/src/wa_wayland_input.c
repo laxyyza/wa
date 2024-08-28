@@ -8,7 +8,7 @@
 
 void 
 wa_kb_map(void* data, _WA_UNUSED struct wl_keyboard* keyboard, 
-          _WA_UNUSED uint32_t frmt, int fd, uint32_t size)
+          _WA_UNUSED u32 frmt, i32 fd, u32 size)
 {
     wa_window_t* window = data;
     wa_xkb_map(window, size, fd);
@@ -16,7 +16,7 @@ wa_kb_map(void* data, _WA_UNUSED struct wl_keyboard* keyboard,
 
 void 
 wa_kb_enter(_WA_UNUSED void* data, _WA_UNUSED struct wl_keyboard* keyboard, 
-            uint32_t serial, _WA_UNUSED struct wl_surface* surface, 
+            u32 serial, _WA_UNUSED struct wl_surface* surface, 
             _WA_UNUSED struct wl_array* array)
 {
     wa_window_t* window = data;
@@ -26,7 +26,7 @@ wa_kb_enter(_WA_UNUSED void* data, _WA_UNUSED struct wl_keyboard* keyboard,
 
 void 
 wa_kb_leave(_WA_UNUSED void* data, _WA_UNUSED struct wl_keyboard* keyboard, 
-            uint32_t serial, _WA_UNUSED struct wl_surface* surface)
+            u32 serial, _WA_UNUSED struct wl_surface* surface)
 {
     wa_window_t* window = data;
     wa_log(WA_VBOSE, "kb_leave: serial: %u\n", serial);
@@ -35,8 +35,8 @@ wa_kb_leave(_WA_UNUSED void* data, _WA_UNUSED struct wl_keyboard* keyboard,
 
 void 
 wa_kb_key(void* data, _WA_UNUSED struct wl_keyboard* keyboard, 
-          _WA_UNUSED uint32_t serial, _WA_UNUSED uint32_t t, 
-          uint32_t key, uint32_t state)
+          _WA_UNUSED u32 serial, _WA_UNUSED u32 t, 
+          u32 key, u32 state)
 {
     wa_window_t* window = data;
     wa_key_t wa_key = wa_xkb_key(window, key, state);
@@ -53,9 +53,9 @@ wa_kb_key(void* data, _WA_UNUSED struct wl_keyboard* keyboard,
 void 
 wa_kb_mod(void* data, 
           _WA_UNUSED struct wl_keyboard* keyboard, 
-          _WA_UNUSED uint32_t serial,
-          uint32_t mods_depressed, uint32_t mods_latched, 
-          uint32_t mods_locked, uint32_t group)
+          _WA_UNUSED u32 serial,
+          u32 mods_depressed, u32 mods_latched, 
+          u32 mods_locked, u32 group)
 {
     wa_window_t* window = data;
 
@@ -65,14 +65,14 @@ wa_kb_mod(void* data,
 
 void 
 wa_kb_rep(_WA_UNUSED void* data, _WA_UNUSED struct wl_keyboard* keyboard, 
-          int32_t rate, int32_t del)
+          i32 rate, i32 del)
 {
     wa_log(WA_VBOSE, "kb_rep: rate: %u, del: %d\n", rate, del);
 }
 
 void 
 wa_point_enter(void* data, struct wl_pointer* pointer, 
-               uint32_t serial, _WA_UNUSED struct wl_surface* surface, 
+               u32 serial, _WA_UNUSED struct wl_surface* surface, 
                wl_fixed_t surface_x, wl_fixed_t surface_y)
 {
     wa_window_t* window = data;
@@ -87,18 +87,18 @@ wa_point_enter(void* data, struct wl_pointer* pointer,
 
 void 
 wa_point_leave(_WA_UNUSED void* data, _WA_UNUSED struct wl_pointer* pointer, 
-               _WA_UNUSED uint32_t serial, _WA_UNUSED struct wl_surface* surface)
+               _WA_UNUSED u32 serial, _WA_UNUSED struct wl_surface* surface)
 {
     wa_log(WA_VBOSE, "WA: point_leave()\n");
 }
 
 void 
-wa_point_move(void* data, _WA_UNUSED struct wl_pointer* pointer, _WA_UNUSED uint32_t time, 
+wa_point_move(void* data, _WA_UNUSED struct wl_pointer* pointer, _WA_UNUSED u32 time, 
               wl_fixed_t surface_x, wl_fixed_t surface_y)
 {
     wa_window_t* window = data;
-    const int x = wl_fixed_to_int(surface_x);
-    const int y = wl_fixed_to_int(surface_y);
+    const i32 x = wl_fixed_to_int(surface_x);
+    const i32 y = wl_fixed_to_int(surface_y);
 
     wa_event_t event = {
         .type = WA_EVENT_POINTER,
@@ -110,7 +110,7 @@ wa_point_move(void* data, _WA_UNUSED struct wl_pointer* pointer, _WA_UNUSED uint
 }
 
 static wa_mouse_butt_t
-wa_mouse_button(uint32_t button)
+wa_mouse_button(u32 button)
 {
     switch (button)
     {
@@ -127,7 +127,7 @@ wa_mouse_button(uint32_t button)
 
 void 
 wa_point_button(void* data, _WA_UNUSED struct wl_pointer* pointer, 
-                uint32_t serial, uint32_t time, uint32_t button, uint32_t state)
+                u32 serial, u32 time, u32 button, u32 state)
 {
     wa_window_t* window = data;
 
@@ -149,7 +149,7 @@ wa_point_button(void* data, _WA_UNUSED struct wl_pointer* pointer,
 
 void 
 wa_point_axis(_WA_UNUSED void* data, _WA_UNUSED struct wl_pointer* pointer, 
-              _WA_UNUSED uint32_t time, _WA_UNUSED uint32_t axis_type, 
+              _WA_UNUSED u32 time, _WA_UNUSED u32 axis_type, 
               _WA_UNUSED wl_fixed_t value)
 {
     /* no-op */
@@ -163,28 +163,28 @@ wa_point_frame(_WA_UNUSED void* data, _WA_UNUSED struct wl_pointer* pointer)
 
 void 
 wa_point_axis_src(_WA_UNUSED void* data, _WA_UNUSED struct wl_pointer* pointer, 
-                  _WA_UNUSED uint32_t axis_src)
+                  _WA_UNUSED u32 axis_src)
 {
     /* no-op */
 }
 
 void 
 wa_point_axis_stop(_WA_UNUSED void* data, _WA_UNUSED struct wl_pointer* pointer, 
-                   _WA_UNUSED uint32_t time, _WA_UNUSED uint32_t axis)
+                   _WA_UNUSED u32 time, _WA_UNUSED u32 axis)
 {
     /* no-op */
 }
 
 void 
 wa_point_axis_discrete(_WA_UNUSED void* data, _WA_UNUSED struct wl_pointer* pointer, 
-                       _WA_UNUSED uint32_t axis, _WA_UNUSED int32_t discrete)
+                       _WA_UNUSED u32 axis, _WA_UNUSED i32 discrete)
 {
     /* no-op */
 }
 
 void 
 wa_point_axis120(void* data, _WA_UNUSED struct wl_pointer* pointer, 
-                 uint32_t axis_type, int value)
+                 u32 axis_type, i32 value)
 {
     wa_window_t* window = data;
 
@@ -198,13 +198,13 @@ wa_point_axis120(void* data, _WA_UNUSED struct wl_pointer* pointer,
 
 void 
 wa_point_axis_dir(_WA_UNUSED void* data, _WA_UNUSED struct wl_pointer* pointer, 
-                  _WA_UNUSED uint32_t axis_type, _WA_UNUSED uint32_t dir)
+                  _WA_UNUSED u32 axis_type, _WA_UNUSED u32 dir)
 {
     /* no-op */
 }
 
 void 
-wa_seat_cap(void* data, struct wl_seat* seat, uint32_t cap)
+wa_seat_cap(void* data, struct wl_seat* seat, u32 cap)
 {
     wa_window_t* window = data;
     if (cap & WL_SEAT_CAPABILITY_KEYBOARD)

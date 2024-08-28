@@ -1,6 +1,8 @@
 #ifndef _WA_LOG_H_
 #define _WA_LOG_H_
 
+#include "wa_int.h"
+
 enum wa_log_level
 {
     WA_FATAL,
@@ -14,7 +16,7 @@ enum wa_log_level
 };
 
 void wa_log_set_level(enum wa_log_level level);
-void wa_log_msg(enum wa_log_level level, const char* file, int line, const char* format, ...);
+void wa_log_msg(enum wa_log_level level, const char* file, i32 line, const char* format, ...);
 
 /*
  * wa_logf() will log the file name and line number with the message

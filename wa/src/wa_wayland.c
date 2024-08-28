@@ -22,8 +22,8 @@ wa_set_surface_opaque(wa_window_t* window)
 static void 
 wa_window_resize(wa_window_t* window)
 {
-    const int w = window->state.window.w;
-    const int h = window->state.window.h;
+    const i32 w = window->state.window.w;
+    const i32 h = window->state.window.h;
 
     if (window->wl_egl_window == NULL)
         return;
@@ -34,14 +34,14 @@ wa_window_resize(wa_window_t* window)
 }
 
 static void 
-wa_xdg_shell_ping(_WA_UNUSED void* data, struct xdg_wm_base* xdg_shell, uint32_t serial)
+wa_xdg_shell_ping(_WA_UNUSED void* data, struct xdg_wm_base* xdg_shell, u32 serial)
 {
     xdg_wm_base_pong(xdg_shell, serial);
     wa_log(WA_VBOSE, "XDG Shell pong!\n");
 }
 
 static void 
-wa_reg_glob(void* data, struct wl_registry* reg, uint32_t name, const char* interface, uint32_t version)
+wa_reg_glob(void* data, struct wl_registry* reg, u32 name, const char* interface, u32 version)
 {
     wa_window_t* window = data;
 
@@ -99,7 +99,7 @@ wa_reg_glob(void* data, struct wl_registry* reg, uint32_t name, const char* inte
 }
 
 static void 
-wa_reg_glob_rm(_WA_UNUSED void* data, _WA_UNUSED struct wl_registry* reg, uint32_t name)
+wa_reg_glob_rm(_WA_UNUSED void* data, _WA_UNUSED struct wl_registry* reg, u32 name)
 {
     wa_log(WA_WARN, "Interface: %u removed.\n", name);
 }
@@ -113,7 +113,7 @@ wa_draw(wa_window_t* window)
 }
 
 static void 
-wa_frame_done(void* data, struct wl_callback* callback, _WA_UNUSED uint32_t callback_data)
+wa_frame_done(void* data, struct wl_callback* callback, _WA_UNUSED u32 callback_data)
 {
     wa_window_t* window = data;
 
@@ -130,7 +130,7 @@ wa_frame_done(void* data, struct wl_callback* callback, _WA_UNUSED uint32_t call
 }
 
 static void 
-wa_xdg_surface_conf(_WA_UNUSED void* data, struct xdg_surface* xdg_surface, uint32_t serial)
+wa_xdg_surface_conf(_WA_UNUSED void* data, struct xdg_surface* xdg_surface, u32 serial)
 {
     xdg_surface_ack_configure(xdg_surface, serial);
     wa_log(WA_VBOSE, "XDG Surface configire\n");
@@ -153,7 +153,7 @@ wa_init_xdg_decoration(wa_window_t* window)
 }
 
 static void 
-wa_toplevel_conf(void* data, _WA_UNUSED struct xdg_toplevel* toplevel, int w, int h, struct wl_array* states)
+wa_toplevel_conf(void* data, _WA_UNUSED struct xdg_toplevel* toplevel, i32 w, i32 h, struct wl_array* states)
 {
     wa_window_t* window = data;
 
@@ -176,9 +176,9 @@ wa_toplevel_conf(void* data, _WA_UNUSED struct xdg_toplevel* toplevel, int w, in
         window->state.callbacks.event(window, &event, window->state.user_data);
     }
 
-    uint16_t window_state = 0;
+    u16 window_state = 0;
 
-    uint32_t* state;
+    u32* state;
     wl_array_for_each(state, states)
     {
         switch (*state)
@@ -211,7 +211,7 @@ wa_toplevel_close(void* data, _WA_UNUSED struct xdg_toplevel* toplevel)
 }
 
 static void 
-wa_toplevel_conf_bounds(_WA_UNUSED void* data, _WA_UNUSED struct xdg_toplevel* toplevel, _WA_UNUSED int w, _WA_UNUSED int h)
+wa_toplevel_conf_bounds(_WA_UNUSED void* data, _WA_UNUSED struct xdg_toplevel* toplevel, _WA_UNUSED i32 w, _WA_UNUSED i32 h)
 {
     // wa_log(WA_DEBUG, "toplevel bounds: %dx%d\n", w, h);
 }
@@ -219,7 +219,7 @@ wa_toplevel_conf_bounds(_WA_UNUSED void* data, _WA_UNUSED struct xdg_toplevel* t
 static void 
 wa_toplevel_wm_caps(_WA_UNUSED void* data, _WA_UNUSED struct xdg_toplevel* toplevel, _WA_UNUSED struct wl_array* caps)
 {
-    uint32_t* cap;
+    u32* cap;
     wl_array_for_each(cap, caps)
     {
         switch (*cap)
@@ -245,15 +245,15 @@ wa_toplevel_wm_caps(_WA_UNUSED void* data, _WA_UNUSED struct xdg_toplevel* tople
 
 static void 
 wa_output_geo(_WA_UNUSED void* data, _WA_UNUSED struct wl_output* output, 
-              int x, int y, int phy_w, int phy_h, int subpixel, 
-              const char* make, const char* model, int transform)
+              i32 x, i32 y, i32 phy_w, i32 phy_h, i32 subpixel, 
+              const char* make, const char* model, i32 transform)
 {
     wa_log(WA_VBOSE, "Output\n\tx/y:\t%dx%d\n\tphy w/h:\t%dx%d\n\tsubpixel:\t%d\n\tmake:\t'%s'\n\tmodel:\t'%s'\n\ttransform:\t%d\n",
             x, y, phy_w, phy_h, subpixel, make, model, transform);
 }
 
 static void 
-wa_output_mode(_WA_UNUSED void* data, _WA_UNUSED struct wl_output* output, uint32_t flags, int w, int h, int refresh_rate)
+wa_output_mode(_WA_UNUSED void* data, _WA_UNUSED struct wl_output* output, u32 flags, i32 w, i32 h, i32 refresh_rate)
 {
     wa_log(WA_VBOSE, "Mode: %dx%d @ %d (flags: %u)\n", w, h, refresh_rate, flags);
 }
@@ -265,7 +265,7 @@ wa_output_done(_WA_UNUSED void* data, _WA_UNUSED struct wl_output* output)
 }
 
 static void 
-wa_output_scale(_WA_UNUSED void* data, _WA_UNUSED struct wl_output* output, int factor)
+wa_output_scale(_WA_UNUSED void* data, _WA_UNUSED struct wl_output* output, i32 factor)
 {
     wa_log(WA_VBOSE, "Scale:\t%d\n", factor);
 }
@@ -362,7 +362,7 @@ wa_window_init_wayland(wa_window_t* window)
     window->wl_output_listener.scale = wa_output_scale;
     window->wl_output_listener.name = wa_output_name;
     window->wl_output_listener.description = wa_output_desc;
-    for (size_t i = 0; i < window->n_outputs; i++)
+    for (u64 i = 0; i < window->n_outputs; i++)
         wl_output_add_listener(window->wl_outputs[i], &window->wl_output_listener, window);
 
     wa_init_xdg_decoration(window);
@@ -386,7 +386,7 @@ wa_window_init_wayland(wa_window_t* window)
 }
 
 wa_window_t* 
-wa_window_create(const char* title, int w, int h, bool fullscreen)
+wa_window_create(const char* title, i32 w, i32 h, bool fullscreen)
 {
     wa_state_t state;
     wa_state_set_default(&state);
@@ -465,9 +465,9 @@ wa_window_running(const wa_window_t* window)
 }
 
 static void 
-wa_wayland_poll(wa_window_t* window, int32_t timeout)
+wa_wayland_poll(wa_window_t* window, i32 timeout)
 {
-    int32_t ret = poll(&window->pollfd, 1, timeout);
+    i32 ret = poll(&window->pollfd, 1, timeout);
     if (ret > 0)
     {
         wl_display_read_events(window->wl_display);
@@ -486,7 +486,7 @@ wa_wayland_poll(wa_window_t* window, int32_t timeout)
 }
 
 void
-wa_window_poll_timeout(wa_window_t* window, int32_t timeout)
+wa_window_poll_timeout(wa_window_t* window, i32 timeout)
 {
     if (wl_display_prepare_read(window->wl_display) == 0)
         wa_wayland_poll(window, timeout);
@@ -595,7 +595,7 @@ wa_window_wayland_cleanup(wa_window_t* window)
         wl_seat_destroy(window->wl_seat);
     if (window->wl_region)
         wl_region_destroy(window->wl_region);
-    for (size_t i = 0; i < window->n_outputs; i++)
+    for (u64 i = 0; i < window->n_outputs; i++)
         if (window->wl_outputs[i])
             wl_output_destroy(window->wl_outputs[i]);
 

@@ -141,7 +141,7 @@ wa_xkb_to_wa_key(xkb_keysym_t keysym)
 }
 
 void 
-wa_xkb_map(wa_window_t* window, uint32_t size, int32_t fd)
+wa_xkb_map(wa_window_t* window, u32 size, i32 fd)
 {
     char* map_str = MAP_FAILED;
 
@@ -184,11 +184,11 @@ wa_xkb_map(wa_window_t* window, uint32_t size, int32_t fd)
 }
 
 wa_key_t
-wa_xkb_key(wa_window_t* window, uint32_t key, uint32_t state)
+wa_xkb_key(wa_window_t* window, u32 key, u32 state)
 {
     xkb_keycode_t keycode = key + 8;
     xkb_keysym_t sym = xkb_state_key_get_one_sym(window->xkb_state, keycode);
-    uint8_t pressed = state & WL_KEYBOARD_KEY_STATE_PRESSED;
+    u8 pressed = state & WL_KEYBOARD_KEY_STATE_PRESSED;
     wa_key_t wa_key = wa_xkb_to_wa_key(sym);
 
     window->state.key_map[wa_key] = pressed;

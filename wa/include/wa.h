@@ -1,6 +1,7 @@
 #ifndef _WA_H_
 #define _WA_H_
 
+#include "wa_int.h"
 #include "wa_event.h"
 #include "wa_keys.h"
 
@@ -25,9 +26,9 @@ typedef struct
 
 typedef struct 
 {
-    int w;
-    int h;
-    uint16_t state;
+    i32 w;
+    i32 h;
+    u16 state;
     const char* title;
     bool vsync;
 
@@ -37,11 +38,11 @@ typedef struct
     } wayland;
 
     struct {
-        uint8_t red_size;
-        uint8_t green_size;
-        uint8_t blue_size;
-        uint8_t alpha_size;
-        uint8_t depth_size;
+        u8 red_size;
+        u8 green_size;
+        u8 blue_size;
+        u8 alpha_size;
+        u8 depth_size;
     } egl;
 } wa_window_state_t;
 
@@ -50,22 +51,22 @@ typedef struct
     wa_window_state_t   window;
     wa_callbacks_t      callbacks;
     void*               user_data;
-    uint8_t             key_map[WA_KEY_LEN];
-    uint8_t             mouse_map[WA_MOUSE_LEN];
+    u8             key_map[WA_KEY_LEN];
+    u8             mouse_map[WA_MOUSE_LEN];
 } wa_state_t;
 
-wa_window_t*    wa_window_create(const char* title, int w, int h, bool fullscrenn);
+wa_window_t*    wa_window_create(const char* title, i32 w, int h, bool fullscrenn);
 wa_window_t*    wa_window_create_from_state(wa_state_t* state);
 void            wa_state_set_default(wa_state_t* state);
 void            wa_window_set_callbacks(wa_window_t* window, const wa_callbacks_t* callbacks);
 wa_state_t*     wa_window_get_state(wa_window_t* window);
-int             wa_window_mainloop(wa_window_t* window);
+i32             wa_window_mainloop(wa_window_t* window);
 void            wa_window_set_fullscreen(wa_window_t* window, bool fullscreen);
 void            wa_window_stop(wa_window_t* window);
 void            wa_window_delete(wa_window_t* window);
 void            wa_window_vsync(wa_window_t* window, bool vsync);
 
-void wa_window_poll_timeout(wa_window_t* window, int32_t timeout);
+void wa_window_poll_timeout(wa_window_t* window, i32 timeout);
 void wa_window_poll(wa_window_t* window);
 
 #endif // _WA_H_

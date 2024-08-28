@@ -6,7 +6,7 @@
 #include "wa_win32_keymap.h"
 
 wa_window_t*    
-wa_window_create(const char* title, int w, int h, bool fullscreen)
+wa_window_create(const char* title, i32 w, i32 h, bool fullscreen)
 {
     wa_state_t state;
     wa_state_set_default(&state);
@@ -26,7 +26,7 @@ wa_draw(wa_window_t* window)
 }
 
 static void
-wa_resize(wa_window_t* window, int w, int h)
+wa_resize(wa_window_t* window, i32 w, i32 h)
 {
     if (w == 0 || h == 0)
         return;
@@ -117,8 +117,8 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
             return 0;
         case WM_SIZE:
         {
-            int w = LOWORD(lparam);
-            int h = HIWORD(lparam);
+            i32 w = LOWORD(lparam);
+            i32 h = HIWORD(lparam);
             wa_log(WA_VBOSE, "WM_SIZE: %d/%d\n", w, h);
             wa_resize(window, w, h);
             return 0;
@@ -183,7 +183,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 }
 
 // Define the function pointer type
-typedef HGLRC (APIENTRY *wglCreateContextAttribsARBProc)(HDC, HGLRC, const int *);
+typedef HGLRC (APIENTRY *wglCreateContextAttribsARBProc)(HDC, HGLRC, const i32 *);
 
 // Declare a global variable for the function pointer
 wglCreateContextAttribsARBProc wglCreateContextAttribsARB = NULL;
@@ -256,7 +256,7 @@ wa_window_create_from_state(wa_state_t* state)
     pfd.cDepthBits = 24;
     pfd.iLayerType = PFD_MAIN_PLANE;
 
-    int pixelformat = ChoosePixelFormat(hdc, &pfd);
+    i32 pixelformat = ChoosePixelFormat(hdc, &pfd);
     SetPixelFormat(hdc, pixelformat, &pfd);
 
     // Create a temporary OpenGL context
@@ -269,7 +269,7 @@ wa_window_create_from_state(wa_state_t* state)
     if (wglCreateContextAttribsARB) 
     {
         // Define attributes for the core profile context
-        int attribs[] = {
+        i32 attribs[] = {
             WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
             WGL_CONTEXT_MINOR_VERSION_ARB, 6,
             WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
@@ -299,7 +299,7 @@ wa_window_get_state(wa_window_t* window)
 }
 
 void
-wa_window_poll_timeout(wa_window_t *window, _WA_UNUSED int32_t timeout)
+wa_window_poll_timeout(wa_window_t *window, _WA_UNUSED i32 timeout)
 {
     MSG msg;
     if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))

@@ -51,7 +51,7 @@ wa_window_egl_init(wa_window_t* window)
         EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
         EGL_NONE
     };
-    int n;
+    i32 n;
 
     if ((window->egl_display = eglGetDisplay(window->wl_display)) == EGL_NO_DISPLAY)
     {

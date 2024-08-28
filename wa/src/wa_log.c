@@ -58,7 +58,7 @@ void wa_log_set_level(enum wa_log_level level)
     wa_level = level;
 }
 
-void wa_log_msg(enum wa_log_level level, const char* filename, int line, const char* format, ...)
+void wa_log_msg(enum wa_log_level level, const char* filename, i32 line, const char* format, ...)
 {
     if (wa_level < level)
         return;
