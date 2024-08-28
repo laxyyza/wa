@@ -1,21 +1,26 @@
 #ifndef _WA_WAYLAND_H_
 #define _WA_WAYLAND_H_
 
+/* WA Includes */
 #include "wa.h"
 #include "wa_cursor.h"
+#include "wa_wayland_egl.h"
+
+/* System Includes */
+#include <stdlib.h>
+#include <sys/mman.h>
+#include <unistd.h>
+#include <EGL/egl.h>
+#include <poll.h>
+#include <xkbcommon/xkbcommon.h>
+#include <wayland-client.h>
+#include <wayland-egl.h>
+
+/* Wayland Generated Protocols */
 #include "xdg-shell.h"
 #include "xdg-decoration-unstable-v1.h"
 #include "tearing-control-v1.h"
 #include "cursor-shape-v1.h"
-
-#include <stdlib.h>
-#include <sys/mman.h>
-#include <unistd.h>
-#include <wayland-client.h>
-#include <wayland-egl.h>
-#include <EGL/egl.h>
-#include <xkbcommon/xkbcommon.h>
-#include <poll.h>
 
 typedef struct wa_window
 {

@@ -32,8 +32,9 @@ else
         'src/wa_log.c',
         'src/wa_wayland.c',
         'src/wa_wayland_input.c',
-        'src/wa_xkbcommon.c',
         'src/wa_wayland_cursor.c',
+        'src/wa_wayland_egl.c',
+        'src/wa_xkbcommon.c',
     ]
 
     # Find Wayland dependencies
