@@ -6,16 +6,14 @@ wa_src = [
 message('Building WA for ', host_machine.system(), host_machine.cpu())
 
 wa_deps = []
+args = []
 
 if meson.is_cross_build()
     add_global_arguments(
         '-Wno-error=cast-function-type',
         language: 'c'
     )
-    add_project_arguments(
-        '-D_WA_WIN32',
-        language: 'c'
-    )
+    args += '-D_WA_WIN32'
     wa_src += [
         'src/wa_win32.c',
         'src/wa_win32_keymap.c',
@@ -24,10 +22,7 @@ if meson.is_cross_build()
     gl = dependency('gl', required: true)
     wa_deps += gl
 else
-    add_project_arguments(
-        '-D_WA_WAYLAND',
-        language: 'c'
-    )
+    args += '-D_WA_WAYLAND'
     wa_src += [
         'src/wa_log.c',
         'src/wa_wayland.c',
@@ -69,5 +64,6 @@ install_headers(public_headers, install_dir: 'include/wa')
 libwa = library('wa', wa_src,
     include_directories: wa_include,
     dependencies: wa_deps,
-    install: true
+    install: true,
+    c_args: args
 )
