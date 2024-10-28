@@ -164,7 +164,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
         {
             wa_event_t ev = {
                 .type = WA_EVENT_MOUSE_WHEEL,
-                .wheel.value = GET_WHEEL_DELTA_WPARAM(wparam),
+                .wheel.value = -GET_WHEEL_DELTA_WPARAM(wparam),
             };
             window->state.callbacks.event(window, &ev, window->state.user_data);
             return 0;
