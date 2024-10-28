@@ -9,11 +9,7 @@ wa_deps = []
 args = []
 
 if meson.is_cross_build()
-    add_global_arguments(
-        '-Wno-error=cast-function-type',
-        language: 'c'
-    )
-    args += '-D_WA_WIN32'
+    args += ['-Wno-error=cast-function-type','-D_WA_WIN32'] 
     wa_src += [
         'src/wa_win32.c',
         'src/wa_win32_keymap.c',
