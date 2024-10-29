@@ -114,4 +114,6 @@ void wa_point_axis_dir(void* data, struct wl_pointer* pointer, uint32_t axis_typ
 void wa_seat_cap(void* data, struct wl_seat* seat, uint32_t cap);
 void wa_seat_name(void* data, struct wl_seat* seat, const char* name);
 
+void wa_wayland_read_events(wa_window_t* window);
+
 #endif // _WA_WAYLAND_H_

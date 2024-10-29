@@ -470,15 +470,19 @@ wa_window_running(const wa_window_t* window)
     return window->running;
 }
 
+void
+wa_wayland_read_events(wa_window_t* window)
+{
+	wl_display_read_events(window->wl_display);
+	wl_display_dispatch_pending(window->wl_display);
+}
+
 static void 
 wa_wayland_poll(wa_window_t* window, i32 timeout)
 {
     i32 ret = poll(&window->pollfd, 1, timeout);
     if (ret > 0)
-    {
-        wl_display_read_events(window->wl_display);
-        wl_display_dispatch_pending(window->wl_display);
-    }
+		wa_wayland_read_events(window);
     else if (ret == 0)
     {
         wl_display_cancel_read(window->wl_display);
