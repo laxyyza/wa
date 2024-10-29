@@ -159,6 +159,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
         case WM_PAINT:
 			if (window->state.window.vsync)
 			{
+				window->state.callbacks.update(window, window->state.user_data);
 				wa_draw(window);
 				return 0;
 			}

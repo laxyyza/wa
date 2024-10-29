@@ -107,6 +107,7 @@ wa_reg_glob_rm(_WA_UNUSED void* data, _WA_UNUSED struct wl_registry* reg, u32 na
 static void 
 wa_draw(wa_window_t* window)
 {
+    window->state.callbacks.update(window, window->state.user_data);
     window->state.callbacks.draw(window, window->state.user_data);
 	wa_swap_buffers(window);
 }
