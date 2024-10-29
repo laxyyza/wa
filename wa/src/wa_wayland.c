@@ -108,7 +108,12 @@ static void
 wa_draw(wa_window_t* window)
 {
     window->state.callbacks.draw(window, window->state.user_data);
+	wa_swap_buffers(window);
+}
 
+void 
+wa_swap_buffers(wa_window_t* window)
+{
     eglSwapBuffers(window->egl_display, window->egl_surface);
 }
 
@@ -126,7 +131,7 @@ wa_frame_done(void* data, struct wl_callback* callback, _WA_UNUSED u32 callback_
     callback = wl_surface_frame(window->wl_surface);
     wl_callback_add_listener(callback, &window->wl_frame_done_listener, data);
 
-    wa_draw(window);
+	wa_draw(window);
 }
 
 static void 

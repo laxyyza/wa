@@ -21,8 +21,7 @@ static void
 wa_draw(wa_window_t* window)
 {
     window->state.callbacks.draw(window, window->state.user_data);
-
-    SwapBuffers(window->hdc);
+	wa_swap_buffers(window);
 }
 
 static void
@@ -158,8 +157,12 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
             wa_win32_button_event(window, msg);
             return 0;
         case WM_PAINT:
-            wa_draw(window);
-            return 0;
+			if (window->state.window.vsync)
+			{
+				wa_draw(window);
+				return 0;
+			}
+			break;
         case WM_MOUSEWHEEL:
         {
             wa_event_t ev = {
@@ -401,4 +404,16 @@ wa_window_vsync(wa_window_t* window, bool vsync)
 {
     ((BOOL(WINAPI*)(int))wglGetProcAddress("wglSwapIntervalEXT"))(vsync);
     window->state.window.vsync = vsync;
+}
+
+bool
+wa_window_running(const wa_window_t* window)
+{
+	return window->running;
+}
+
+void 
+wa_swap_buffers(wa_window_t *window)
+{
+    SwapBuffers(window->hdc);
 }

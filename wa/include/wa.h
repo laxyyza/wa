@@ -69,4 +69,7 @@ void            wa_window_vsync(wa_window_t* window, bool vsync);
 void wa_window_poll_timeout(wa_window_t* window, i32 timeout);
 void wa_window_poll(wa_window_t* window);
 
+bool wa_window_running(const wa_window_t* window);
+void wa_swap_buffers(wa_window_t* window);
+
 #endif // _WA_H_
