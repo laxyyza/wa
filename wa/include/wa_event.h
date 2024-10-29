@@ -16,32 +16,47 @@ enum wa_event_type
     WA_EVENT_MOUSE_WHEEL,
 };
 
+typedef struct 
+{
+	wa_key_t key;
+	bool pressed;
+} wa_event_key_t;
+
+typedef struct 
+{
+	int x;
+	int y;
+} wa_event_pointer_t;
+
+typedef struct 
+{
+	int w;
+	int h;
+	int old_w;
+	int old_h;
+} wa_event_resize_t;
+
+typedef struct 
+{
+	wa_mouse_butt_t button;
+	bool pressed;
+} wa_event_mouse_t;
+
+typedef struct 
+{
+	int32_t value;
+	int32_t axis;
+} wa_event_wheel_t;
+
 typedef struct  
 {
     enum wa_event_type type;
     union {
-        struct {
-            wa_key_t key;
-            bool pressed;
-        } keyboard;
-        struct {
-            int x;
-            int y;
-        } pointer;
-        struct {
-            int w;
-            int h;
-            int old_w;
-            int old_h;
-        } resize;
-        struct {
-            wa_mouse_butt_t button;
-            bool pressed;
-        } mouse;
-        struct  {
-            int32_t value;
-            int32_t axis;
-        } wheel;
+		wa_event_key_t		keyboard;
+		wa_event_pointer_t	pointer;
+		wa_event_resize_t	resize;
+		wa_event_mouse_t	mouse;
+		wa_event_wheel_t	wheel;
     };
 } wa_event_t;
 
