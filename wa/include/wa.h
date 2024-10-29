@@ -13,7 +13,6 @@ typedef struct
 {
     void (*event)(wa_window_t* window, const wa_event_t* event, void* data);
     void (*update)(wa_window_t* window, void* data);
-    void (*draw)(wa_window_t* window, void* data);
     void (*close)(wa_window_t* window, void* data);
     void (*focus)(wa_window_t* window, void* data);
     void (*unfocus)(wa_window_t* window, void* data);

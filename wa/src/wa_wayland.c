@@ -108,7 +108,6 @@ static void
 wa_draw(wa_window_t* window)
 {
     window->state.callbacks.update(window, window->state.user_data);
-    window->state.callbacks.draw(window, window->state.user_data);
 	wa_swap_buffers(window);
 }
 
@@ -650,7 +649,8 @@ wa_wayland_tear(wa_window_t* window, bool tear)
                                      &window->wl_frame_done_listener, 
                                      window);
             
-            wa_draw(window);
+			wa_swap_buffers(window);
+            // wa_draw(window);
         }
     }
 
