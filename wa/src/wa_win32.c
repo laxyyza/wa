@@ -20,7 +20,7 @@ wa_window_create(const char* title, i32 w, i32 h, bool fullscreen)
 static void
 wa_draw(wa_window_t* window)
 {
-    window->state.callbacks.draw(window, window->state.user_data);
+    window->state.callbacks.update(window, window->state.user_data);
 	wa_swap_buffers(window);
 }
 
