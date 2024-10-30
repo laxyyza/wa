@@ -20,6 +20,7 @@ typedef struct
 {
 	wa_key_t key;
 	bool pressed;
+	char ascii;
 } wa_event_key_t;
 
 typedef struct 
