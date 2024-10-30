@@ -49,10 +49,23 @@ wa_win32_keyevent(wa_window_t* window, UINT type, WPARAM wparam)
 
     window->state.key_map[key] = pressed;
 
+	UINT vkcode = (UINT)wparam;
+	BYTE keyboard_state[256] = {0};
+	GetKeyboardState(keyboard_state);
+
+	CHAR charbuffer[2] = {0};
+	char ascii = 0;
+
+	i32 ret = ToAscii(vkcode, MapVirtualKey(vkcode, MAPVK_VK_TO_VSC), keyboard_state, (LPWORD)charbuffer, 0);
+
+	if (ret == 1)
+		ascii = charbuffer[0];
+
     wa_event_t ev = {
         .type = WA_EVENT_KEYBOARD,
         .keyboard.key = key,
-        .keyboard.pressed = pressed
+        .keyboard.pressed = pressed,
+		.keyboard.ascii = ascii
     };
     window->state.callbacks.event(window, &ev, window->state.user_data);
 }

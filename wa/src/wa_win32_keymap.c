@@ -86,6 +86,7 @@ wa_win32_key_to_wa_key(WPARAM wparam)
         case VK_LSHIFT:
             return WA_KEY_LSHIFT;
         case VK_LCONTROL:
+		case VK_CONTROL:
             return WA_KEY_LCTRL;
         case VK_LMENU:
             return WA_KEY_LALT;
@@ -103,6 +104,14 @@ wa_win32_key_to_wa_key(WPARAM wparam)
             return WA_KEY_DOWN;
         case VK_LEFT:
             return WA_KEY_LEFT;
+		case VK_BACK:
+			return WA_KEY_BACKSPACE;
+		case VK_DELETE:
+			return WA_KEY_DEL;
+		case VK_HOME:
+			return WA_KEY_HOME;
+		case VK_END:
+			return WA_KEY_END;
         default:
             return WA_KEY_NONE;
     }
