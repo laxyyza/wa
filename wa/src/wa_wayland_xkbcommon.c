@@ -135,6 +135,14 @@ wa_xkb_to_wa_key(xkb_keysym_t keysym)
             return WA_KEY_RIGHT;
         case XKB_KEY_DOWN:
             return WA_KEY_DOWN;
+		case XKB_KEY_BackSpace:
+			return WA_KEY_BACKSPACE;
+		case XKB_KEY_Delete:
+			return WA_KEY_DEL;
+		case XKB_KEY_Home:
+			return WA_KEY_HOME;
+		case XKB_KEY_End:
+			return WA_KEY_END;
         default:
             return WA_KEY_NONE;
     }
@@ -184,10 +192,11 @@ wa_xkb_map(wa_window_t* window, u32 size, i32 fd)
 }
 
 wa_key_t
-wa_xkb_key(wa_window_t* window, u32 key, u32 state)
+wa_xkb_key(wa_window_t* window, u32 key, u32 state, char* ascii)
 {
     xkb_keycode_t keycode = key + 8;
     xkb_keysym_t sym = xkb_state_key_get_one_sym(window->xkb_state, keycode);
+	xkb_state_key_get_utf8(window->xkb_state, keycode, ascii, 2);
     u8 pressed = state & WL_KEYBOARD_KEY_STATE_PRESSED;
     wa_key_t wa_key = wa_xkb_to_wa_key(sym);
 

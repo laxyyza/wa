@@ -7,6 +7,6 @@
 
 wa_key_t wa_xkb_to_wa_key(xkb_keysym_t keysym);
 void wa_xkb_map(wa_window_t* window, uint32_t size, int32_t fd);
-wa_key_t wa_xkb_key(wa_window_t* window, uint32_t key, uint32_t state);
+wa_key_t wa_xkb_key(wa_window_t* window, uint32_t key, uint32_t state, char* ascii);
 
 #endif // _WA_XKBCOMMON_H_

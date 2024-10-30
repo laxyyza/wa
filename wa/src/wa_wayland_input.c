@@ -39,12 +39,14 @@ wa_kb_key(void* data, _WA_UNUSED struct wl_keyboard* keyboard,
           u32 key, u32 state)
 {
     wa_window_t* window = data;
-    wa_key_t wa_key = wa_xkb_key(window, key, state);
+	char ascii[8];
+    wa_key_t wa_key = wa_xkb_key(window, key, state, ascii);
 
     wa_event_t key_event = {
         .type = WA_EVENT_KEYBOARD,
         .keyboard.pressed = state,
-        .keyboard.key = wa_key
+        .keyboard.key = wa_key,
+		.keyboard.ascii = *ascii
     };
 
     window->state.callbacks.event(window, &key_event, window->state.user_data);
