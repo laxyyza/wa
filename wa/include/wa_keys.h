@@ -52,6 +52,10 @@ typedef enum wa_key
     WA_KEY_RALT,
     WA_KEY_RSHIFT,
     WA_KEY_ENTER,
+	WA_KEY_BACKSPACE,
+	WA_KEY_DEL,
+	WA_KEY_HOME,
+	WA_KEY_END,
 
     WA_KEY_UP,
     WA_KEY_LEFT,
