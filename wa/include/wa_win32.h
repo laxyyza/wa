@@ -17,6 +17,8 @@ typedef struct wa_window
     RECT rect;
     HDC hdc;
     HGLRC hglrc;
+    LONG old_style;
+    LONG old_exstyle;
 
     const char* class_name;
 

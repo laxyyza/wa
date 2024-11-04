@@ -259,8 +259,6 @@ wa_window_create_from_state(wa_state_t* state)
     ShowWindow(window->hwnd, SW_SHOWDEFAULT);
     UpdateWindow(window->hwnd);
 
-    wa_window_set_fullscreen(window, window->state.window.state & WA_STATE_FULLSCREEN);
-
     HDC hdc = GetDC(window->hwnd);
     window->hdc = hdc;
 
@@ -305,6 +303,14 @@ wa_window_create_from_state(wa_state_t* state)
     wa_window_vsync(window, window->state.window.vsync);
 
     window->running = true;
+
+    bool fullscreen;
+
+    if ((fullscreen = window->state.window.state & WA_STATE_FULLSCREEN))
+    {
+        window->state.window.state ^= WA_STATE_FULLSCREEN;
+        wa_window_set_fullscreen(window, fullscreen);
+    }
 
     return window;
 }
@@ -355,49 +361,49 @@ wa_window_mainloop(wa_window_t* window)
 void    
 wa_window_set_fullscreen(wa_window_t* window, bool fullscreen)
 {
-    DWORD style;
-
-    if (fullscreen) 
+    bool is_fullscreen = window->state.window.state & WA_STATE_FULLSCREEN;
+    if (fullscreen && is_fullscreen == false)
     {
-        // Save the current window size and position
         GetWindowRect(window->hwnd, &window->rect);
 
-        // Switch to fullscreen mode
-        style = WS_POPUP;
-        SetWindowLong(window->hwnd, GWL_STYLE, style);
-        SetWindowLong(window->hwnd, GWL_EXSTYLE, WS_EX_APPWINDOW | WS_EX_TOPMOST);
+        window->old_style = GetWindowLong(window->hwnd, GWL_STYLE);
+        window->old_exstyle = GetWindowLong(window->hwnd, GWL_EXSTYLE);
 
-        // Get the screen size
-        window->rect.left = 0;
-        window->rect.top = 0;
-        window->rect.right = GetSystemMetrics(SM_CXSCREEN);
-        window->rect.bottom = GetSystemMetrics(SM_CYSCREEN);
+        SetWindowLong(window->hwnd, GWL_STYLE,
+                window->old_style & ~(WS_CAPTION | WS_THICKFRAME));
+        SetWindowLong(window->hwnd, GWL_EXSTYLE,
+                window->old_exstyle & ~(WS_EX_DLGMODALFRAME | WS_EX_WINDOWEDGE |
+                                        WS_EX_CLIENTEDGE | WS_EX_STATICEDGE));
+        
+        MONITORINFO mi;
+        mi.cbSize = sizeof(MONITORINFO);
+        HMONITOR monitor = MonitorFromWindow(window->hwnd, MONITOR_DEFAULTTOPRIMARY);
+        GetMonitorInfo(monitor, &mi);
 
-        // Set the window to cover the entire screen
-        SetWindowPos(window->hwnd, HWND_TOPMOST,
-                     window->rect.left, window->rect.top,
-                     window->rect.right - window->rect.left,
-                     window->rect.bottom - window->rect.top,
-                     SWP_NOACTIVATE | SWP_NOREDRAW | SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+        SetWindowPos(window->hwnd, HWND_TOP,
+            mi.rcMonitor.left,
+            mi.rcMonitor.top,
+            mi.rcMonitor.right - mi.rcMonitor.left,
+            mi.rcMonitor.bottom - mi.rcMonitor.top,
+            SWP_FRAMECHANGED | SWP_NOOWNERZORDER);
+        
         window->state.window.state |= WA_STATE_FULLSCREEN;
-    } 
-    else 
-    {
-        // Switch to windowed mode
-        style = WS_OVERLAPPEDWINDOW;
-        SetWindowLong(window->hwnd, GWL_STYLE, style);
-
-        // Restore the window's previous size and position
-        SetWindowPos(window->hwnd, HWND_TOPMOST,
-                     window->rect.left, window->rect.top,
-                     window->rect.right - window->rect.left,
-                     window->rect.bottom - window->rect.top,
-                     SWP_FRAMECHANGED | SWP_SHOWWINDOW);
-        window->state.window.state ^= WA_STATE_FULLSCREEN;
     }
-    // window->state.window.w = window->rect.right;
-    // window->state.window.h = window->rect.bottom;
-    //wa_resize(window, window->state.window.w, window->state.window.h);
+    else if (is_fullscreen)
+    {
+        SetWindowLong(window->hwnd, GWL_STYLE, window->old_style);
+        SetWindowLong(window->hwnd, GWL_EXSTYLE, window->old_exstyle);
+
+        SetWindowPos(window->hwnd, NULL,
+            window->rect.left,
+            window->rect.top,
+            window->rect.right - window->rect.left,
+            window->rect.bottom - window->rect.top,
+            SWP_FRAMECHANGED | SWP_NOZORDER);
+        
+        if (window->state.window.state & WA_STATE_FULLSCREEN)
+            window->state.window.state ^= WA_STATE_FULLSCREEN;
+    }
 }
 
 void 
