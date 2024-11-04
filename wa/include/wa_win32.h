@@ -16,7 +16,7 @@ typedef struct wa_window
     HINSTANCE instance;
     RECT rect;
     HDC hdc;
-    HGLRC hglrc;
+    HGLRC gl_ctx;
     LONG old_style;
     LONG old_exstyle;
 

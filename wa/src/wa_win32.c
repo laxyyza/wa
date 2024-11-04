@@ -5,6 +5,9 @@
 #include <windows.h>
 #include "wa_win32_keymap.h"
 
+typedef int (WINAPI * PFNWGLSWAPINTERVALEXTPROC)(int interval);
+PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT = NULL;
+
 wa_window_t*    
 wa_window_create(const char* title, i32 w, i32 h, bool fullscreen)
 {
@@ -171,12 +174,8 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
             return 0;
         case WM_PAINT:
 			if (window->state.window.vsync)
-			{
-				window->state.callbacks.update(window, window->state.user_data);
 				wa_draw(window);
-				return 0;
-			}
-			break;
+			return 0;
         case WM_MOUSEWHEEL:
         {
             wa_event_t ev = {
@@ -199,11 +198,77 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
-// Define the function pointer type
-typedef HGLRC (APIENTRY *wglCreateContextAttribsARBProc)(HDC, HGLRC, const i32 *);
+static bool
+wa_win32_init_opengl_ctx(wa_window_t* window)
+{
+    window->hdc = GetDC(window->hwnd);
 
-// Declare a global variable for the function pointer
-wglCreateContextAttribsARBProc wglCreateContextAttribsARB = NULL;
+    PIXELFORMATDESCRIPTOR pfd = {
+        sizeof(PIXELFORMATDESCRIPTOR),
+        1,
+        PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER,
+        PFD_TYPE_RGBA,
+        32,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        24, 8, 0, PFD_MAIN_PLANE, 0, 0, 0, 0
+    };
+
+    i32 pixel_format = ChoosePixelFormat(window->hdc, &pfd);
+    if (pixel_format == 0)
+    {
+        wa_logf(WA_FATAL, "ChoosePixelFormat failed!\n");
+        return false;
+    }
+
+    if (!SetPixelFormat(window->hdc, pixel_format, &pfd))
+    {
+        wa_logf(WA_FATAL, "SetPixelFormat failed!\n");
+        return false;
+    }
+
+    // Create a temporary OpenGL context
+    HGLRC tempContext = wglCreateContext(window->hdc);
+    wglMakeCurrent(window->hdc, tempContext);
+
+    i32 attriblist[] = {
+        WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
+        WGL_CONTEXT_MINOR_VERSION_ARB, 6,
+        WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
+        WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+        0
+    };
+    PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB = 
+            (PFNWGLCREATECONTEXTATTRIBSARBPROC)wglGetProcAddress("wglCreateContextAttribsARB");
+    if (wglCreateContextAttribsARB == NULL)
+    {
+        wa_logf(WA_FATAL, "wglGetProcAddress for wglCreateContextAttribsARB failed!\n");
+        return false;
+    }
+
+    window->gl_ctx = wglCreateContextAttribsARB(window->hdc, 0, attriblist);
+    if (!window->gl_ctx)
+    {
+        wa_logf(WA_FATAL, "wglCreateContextAttribsARB failed!\n");
+        return false;
+    }
+    wglMakeCurrent(NULL, NULL);
+    wglDeleteContext(tempContext);
+
+    if (!wglMakeCurrent(window->hdc, window->gl_ctx))
+    {
+        wa_logf(WA_FATAL, "wglMakeCurrent failed!\n");
+        return false;
+    }
+
+    wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress("wglSwapIntervalEXT");
+    if (wglSwapIntervalEXT == NULL)
+    {
+        wa_logf(WA_FATAL, "wglGetProcAddress for wglSwapIntervalEXT failed!\n");
+        return false;
+    }
+
+    return true;
+}
 
 wa_window_t*    
 wa_window_create_from_state(wa_state_t* state)
@@ -224,7 +289,7 @@ wa_window_create_from_state(wa_state_t* state)
 
     RegisterClass(wc);
 
-    DWORD style = WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU;
+    DWORD style = WS_CAPTION | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU | WS_SIZEBOX;
     RECT* rect = &window->rect;
     rect->left = 250;
     rect->top = 250;
@@ -259,48 +324,9 @@ wa_window_create_from_state(wa_state_t* state)
     ShowWindow(window->hwnd, SW_SHOWDEFAULT);
     UpdateWindow(window->hwnd);
 
-    HDC hdc = GetDC(window->hwnd);
-    window->hdc = hdc;
+    wa_win32_init_opengl_ctx(window);
 
-    PIXELFORMATDESCRIPTOR pfd = {0};
-    pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
-    pfd.nVersion = 1;
-    pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
-    pfd.iPixelType = PFD_TYPE_RGBA;
-    pfd.cColorBits = 32;
-    pfd.cDepthBits = 24;
-    pfd.iLayerType = PFD_MAIN_PLANE;
-
-    i32 pixelformat = ChoosePixelFormat(hdc, &pfd);
-    SetPixelFormat(hdc, pixelformat, &pfd);
-
-    // Create a temporary OpenGL context
-    HGLRC tempContext = wglCreateContext(hdc);
-    wglMakeCurrent(hdc, tempContext);
-
-// Retrieve the function pointer
-    wglCreateContextAttribsARB = (wglCreateContextAttribsARBProc)wglGetProcAddress("wglCreateContextAttribsARB");
-
-    if (wglCreateContextAttribsARB) 
-    {
-        // Define attributes for the core profile context
-        i32 attribs[] = {
-            WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
-            WGL_CONTEXT_MINOR_VERSION_ARB, 6,
-            WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
-            0
-        };
-
-        HGLRC coreContext = wglCreateContextAttribsARB(hdc, 0, attribs);
-        wglMakeCurrent(NULL, NULL);
-        wglDeleteContext(tempContext);
-        wglMakeCurrent(hdc, coreContext);
-        window->hglrc = coreContext;
-    }
-    else
-        wa_log(WA_ERROR, "NUULL?\n");
-
-    wa_window_vsync(window, window->state.window.vsync);
+    //wa_window_vsync(window, true);
 
     window->running = true;
 
@@ -422,8 +448,9 @@ wa_window_delete(wa_window_t* window)
 void
 wa_window_vsync(wa_window_t* window, bool vsync)
 {
-    ((BOOL(WINAPI*)(int))wglGetProcAddress("wglSwapIntervalEXT"))(vsync);
     window->state.window.vsync = vsync;
+    if (wglSwapIntervalEXT(vsync ? 1 : 0) == -1)
+        wa_log(WA_ERROR, "wglSwapIntervalEXT() Failed!\n");
 }
 
 bool
