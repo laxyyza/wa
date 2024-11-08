@@ -676,7 +676,7 @@ wa_clipboard_paste_heap(_WA_UNUSED wa_window_t* window, _WA_UNUSED u32* len_ptr)
 }
 
 bool 
-wa_clipboard_paste(_WA_UNUSED wa_window_t* window, _WA_UNUSED * buffer, _WA_UNUSED u32 max)
+wa_clipboard_paste(_WA_UNUSED wa_window_t* window, _WA_UNUSED char* buffer, _WA_UNUSED u32 max)
 {
     wa_log(WA_DEBUG, "TODO: Implement clipboard for wayland!\n");
     return false;
