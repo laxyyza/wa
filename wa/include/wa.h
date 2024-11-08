@@ -71,4 +71,7 @@ void wa_window_poll(wa_window_t* window);
 bool wa_window_running(const wa_window_t* window);
 void wa_swap_buffers(wa_window_t* window);
 
+char* wa_clipboard_paste_heap(wa_window_t* window, u32* len_ptr);
+bool wa_clipboard_paste(wa_window_t* window, char* buffer, u32 max);
+
 #endif // _WA_H_

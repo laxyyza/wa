@@ -465,3 +465,65 @@ wa_swap_buffers(wa_window_t *window)
 {
     SwapBuffers(window->hdc);
 }
+
+char*
+wa_clipboard_paste_heap(_WA_UNUSED wa_window_t* window, u32* len_ptr)
+{
+    char* ret;
+    if (!OpenClipboard(NULL))
+        return NULL;
+    
+    HANDLE hglb = GetClipboardData(CF_TEXT);
+    if (!hglb)
+    {
+        CloseClipboard();
+        return NULL;
+    }
+
+    char* clip_text = (char*)GlobalLock(hglb);
+    if (!clip_text)
+    {
+        CloseClipboard();
+        return NULL;
+    }
+
+    u32 len = strlen(clip_text);
+    ret = malloc(len + 1);
+    memcpy(ret, clip_text, len);
+
+    if (len_ptr)
+        *len_ptr = len;
+
+    GlobalUnlock(hglb);
+    CloseClipboard();
+
+    return ret;
+}
+
+bool 
+wa_clipboard_paste(_WA_UNUSED wa_window_t* window, char* buffer, u32 max)
+{
+    if (!OpenClipboard(NULL))
+        return false;
+    
+    HANDLE hglb = GetClipboardData(CF_TEXT);
+    if (!hglb)
+    {
+        CloseClipboard();
+        return false;
+    }
+
+    char* clip_text = (char*)GlobalLock(hglb);
+    if (!clip_text)
+    {
+        CloseClipboard();
+        return false;
+    }
+
+    strncpy(buffer, clip_text, max);
+
+    GlobalUnlock(hglb);
+    CloseClipboard();
+
+    return true;
+}
