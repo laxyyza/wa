@@ -667,3 +667,17 @@ wa_window_vsync(wa_window_t* window, bool vsync)
 
     wa_log(WA_DEBUG, "Set VSync: %d\n", vsync);
 }
+
+char*
+wa_clipboard_paste_heap(_WA_UNUSED wa_window_t* window, _WA_UNUSED u32* len_ptr)
+{
+    wa_log(WA_DEBUG, "TODO: Implement clipboard for wayland!\n");
+    return NULL;
+}
+
+bool 
+wa_clipboard_paste(_WA_UNUSED wa_window_t* window, _WA_UNUSED * buffer, _WA_UNUSED u32 max)
+{
+    wa_log(WA_DEBUG, "TODO: Implement clipboard for wayland!\n");
+    return false;
+}
