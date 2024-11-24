@@ -605,8 +605,11 @@ wa_window_wayland_cleanup(wa_window_t* window)
     if (window->wl_region)
         wl_region_destroy(window->wl_region);
     for (u64 i = 0; i < window->n_outputs; i++)
+	{
         if (window->wl_outputs[i])
             wl_output_destroy(window->wl_outputs[i]);
+		free(window->wl_outputs);
+	}
 
     if (window->wl_display)
         wl_display_disconnect(window->wl_display);
