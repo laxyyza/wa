@@ -2,7 +2,6 @@
 #define _WA_EVENT_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 #include "wa_keys.h"
 
 #define WA_KEY_NAME_LEN 32
