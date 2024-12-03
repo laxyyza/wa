@@ -52,6 +52,7 @@ typedef struct
     void*               user_data;
     u8             key_map[WA_KEY_LEN];
     u8             mouse_map[WA_MOUSE_LEN];
+	bool				headless;
 } wa_state_t;
 
 wa_window_t*    wa_window_create(const char* title, i32 w, int h, bool fullscrenn);

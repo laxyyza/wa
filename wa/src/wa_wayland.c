@@ -412,13 +412,12 @@ wa_window_create_from_state(wa_state_t* state)
         return NULL;
     }
     
-    wa_window_t* window = malloc(sizeof(wa_window_t));
+    wa_window_t* window = calloc(1, sizeof(wa_window_t));
     if (window == NULL)
     {
         wa_logf(WA_FATAL, "malloc() returned NULL!\n");
         return NULL;
     }
-    memset(window, 0, sizeof(wa_window_t));
 
     memcpy(&window->state, state, sizeof(wa_state_t));
 
@@ -438,9 +437,11 @@ wa_window_create_from_state(wa_state_t* state)
 
     window->xkb_context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
 
-    wl_display_dispatch(window->wl_display);
-
-    wa_draw(window);
+	if (window->state.headless == false)
+	{
+		wl_display_dispatch(window->wl_display);
+		wa_draw(window);
+	}
 
     window->running = true;
     wa_log(WA_INFO, "Window \"%s\" %dx%d created\n", window->state.window.title, window->state.window.w, window->state.window.h);
